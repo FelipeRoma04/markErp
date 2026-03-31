@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{84C8FB57-CE95-4578-8C17-66EFDF35F436}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>Proyecto</RootNamespace>
+    <AssemblyName>Proyecto</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Controler\accountingControler.cs" />
+    <Compile Include="Controler\assetControler.cs" />
+    <Compile Include="Controler\auditControler.cs" />
+    <Compile Include="Controler\authControler.cs" />
+    <Compile Include="Controler\clientControler.cs" />
+    <Compile Include="Controler\dashboardControler.cs" />
+    <Compile Include="Controler\departamentoControler.cs" />
+    <Compile Include="Controler\empleadosControler.cs" />
+    <Compile Include="Controler\hrControler.cs" />
+    <Compile Include="Controler\payrollControler.cs" />
+    <Compile Include="Controler\productControler.cs" />
+    <Compile Include="Controler\ReportControler.cs" />
+    <Compile Include="Controler\salesControler.cs" />
+    <Compile Include="Controler\UserSession.cs" />
+    <Compile Include="Controler\ValidationHelper.cs" />
+    <Compile Include="Model\accountingModel.cs" />
+    <Compile Include="Model\assetModel.cs" />
+    <Compile Include="Model\auditModel.cs" />
+    <Compile Include="Model\authModel.cs" />
+    <Compile Include="Model\clientModel.cs" />
+    <Compile Include="Model\conexionModel.cs" />
+    <Compile Include="Model\dashboardModel.cs" />
+    <Compile Include="Model\departamentosModel.cs" />
+    <Compile Include="Model\empleadosModel.cs" />
+    <Compile Include="Model\hrModel.cs" />
+    <Compile Include="Model\payrollModel.cs" />
+    <Compile Include="Model\productModel.cs" />
+    <Compile Include="Model\salesModel.cs" />
+    <Compile Include="principal.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="principal.Designer.cs">
+      <DependentUpon>principal.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="View\frmDepartamentos.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmDepartamentos.Designer.cs">
+      <DependentUpon>frmDepartamentos.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmEmpleados.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmEmpleados.Designer.cs">
+      <DependentUpon>frmEmpleados.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmAccounting.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmAccounting.Designer.cs">
+      <DependentUpon>frmAccounting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmAssets.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmAssets.Designer.cs">
+      <DependentUpon>frmAssets.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmAudit.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmAudit.Designer.cs">
+      <DependentUpon>frmAudit.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmAttendance.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmAttendance.Designer.cs">
+      <DependentUpon>frmAttendance.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmClients.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmClients.Designer.cs">
+      <DependentUpon>frmClients.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmQuotes.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmQuotes.Designer.cs">
+      <DependentUpon>frmQuotes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmInvoicing.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmInvoicing.Designer.cs">
+      <DependentUpon>frmInvoicing.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmPayments.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmPayments.Designer.cs">
+      <DependentUpon>frmPayments.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmProducts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmProducts.Designer.cs">
+      <DependentUpon>frmProducts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmEmployeeContracts.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmEmployeeContracts.Designer.cs">
+      <DependentUpon>frmEmployeeContracts.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmLogin.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmLogin.Designer.cs">
+      <DependentUpon>frmLogin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmPayroll.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmPayroll.Designer.cs">
+      <DependentUpon>frmPayroll.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="principal.resx">
+      <DependentUpon>principal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="View\frmDepartamentos.resx">
+      <DependentUpon>frmDepartamentos.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="View\frmEmpleados.resx">
+      <DependentUpon>frmEmpleados.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
