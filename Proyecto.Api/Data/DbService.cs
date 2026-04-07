@@ -4,19 +4,26 @@ using System.Data;
 namespace Proyecto.Api.Data
 {
     /// <summary>
-    /// Thin ADO.NET wrapper shared across all API controllers.
+    /// Thin ADO.NET wrapper shared across all API controllers. 
     /// </summary>
     public class DbService
     {
         private readonly string _connectionString;
+        private readonly bool _inMemory;
 
         public DbService(string connectionString)
         {
             _connectionString = connectionString;
+            _inMemory = string.Equals(connectionString, "INMEMORY", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task<DataTable> QueryAsync(string sql, Dictionary<string, object>? parameters = null)
         {
+            if (_inMemory)
+            {
+                // Return an empty DataTable for in-memory mode so controllers can run without SQL Server.
+                return await Task.FromResult(new DataTable());
+            }
             using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand(sql, conn);
 
@@ -33,6 +40,12 @@ namespace Proyecto.Api.Data
 
         public async Task<bool> ExecuteAsync(string sql, Dictionary<string, object>? parameters = null)
         {
+            if (_inMemory)
+            {
+                // Assume write operations succeed in in-memory mode.
+                return await Task.FromResult(true);
+            }
+
             try
             {
                 using var conn = new SqlConnection(_connectionString);

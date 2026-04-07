@@ -7,7 +7,7 @@ namespace Proyecto.Model
 {
     internal class conexionModel
     {
-        private string cadenaConexion = "Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=dbProyecto;Data Source=FELIPE_BELLO\\SQLEXPRESS";
+        private string cadenaConexion = "Server=.\\SQLEXPRESS;Database=markErp;Trusted_Connection=True;Encrypt=False;TrustServerCertificate=True";
         SqlConnection conexion;
         
         public SqlConnection establecerConexion()
