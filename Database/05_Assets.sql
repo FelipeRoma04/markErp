@@ -9,7 +9,12 @@ BEGIN
         SerialNumber NVARCHAR(100) UNIQUE NOT NULL,
         Type NVARCHAR(100) NOT NULL, -- Laptop, Mobile, Vehicle
         Brand NVARCHAR(100) NULL,
-        Status NVARCHAR(50) DEFAULT 'Available' -- Available, Assigned, Maintenance, Retired
+        Status NVARCHAR(50) DEFAULT 'Available', -- Available, Assigned, Maintenance, Retired
+        Location NVARCHAR(150) NULL,
+        PurchaseDate DATE NULL,
+        PurchaseValue DECIMAL(18,2) NULL,
+        DepreciationMonths INT NULL,
+        ResidualValue DECIMAL(18,2) NULL
     );
 END
 GO

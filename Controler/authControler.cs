@@ -1,3 +1,4 @@
+using System;
 using System.Data;
 using Proyecto.Model;
 
@@ -19,17 +20,27 @@ namespace Proyecto.Controler
                 return true;
             }
 
-            authModel model = new authModel();
-            DataTable ds = model.ValidarUsuario(Username, Password);
-
-            if (ds != null && ds.Rows.Count > 0)
+            try
             {
-                UserSession.Id = (int)ds.Rows[0]["Id"];
-                UserSession.Username = ds.Rows[0]["Username"].ToString();
-                UserSession.Role = ds.Rows[0]["Role"].ToString();
-                return true;
+                authModel model = new authModel();
+                DataTable ds = model.ValidarUsuario(Username, Password);
+
+                if (ds != null && ds.Rows.Count > 0)
+                {
+                    // defensive parsing in case DB returns different types
+                    try { UserSession.Id = System.Convert.ToInt32(ds.Rows[0]["Id"]); } catch { UserSession.Id = 0; }
+                    UserSession.Username = ds.Rows[0]["Username"]?.ToString() ?? string.Empty;
+                    UserSession.Role = ds.Rows[0]["Role"]?.ToString() ?? "Usuario";
+                    return true;
+                }
+                return false;
             }
-            return false;
+            catch
+            {
+                // If any exception occurs during DB auth, fall back to failing login silently
+                // so UI can show a friendly message instead of crashing.
+                return false;
+            }
         }
 
         private bool IsDefaultBypass(string username, string password)

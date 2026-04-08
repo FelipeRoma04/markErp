@@ -10,7 +10,8 @@ BEGIN
         Name NVARCHAR(150) NOT NULL,
         Email NVARCHAR(100) NULL,
         Phone NVARCHAR(50) NULL,
-        Address NVARCHAR(250) NULL
+        Address NVARCHAR(250) NULL,
+        City NVARCHAR(100) NULL
     );
 END
 GO
@@ -34,12 +35,14 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='Invoices' and xtype='U')
 BEGIN
     CREATE TABLE Invoices (
         Id INT PRIMARY KEY IDENTITY(1,1),
+        InvoiceNumber INT UNIQUE NULL,
         QuoteId INT NULL,
         ClientId INT NOT NULL,
         IssueDate DATE NOT NULL,
         DueDate DATE NOT NULL,
         Subtotal DECIMAL(18,2) NOT NULL,
         TotalTax DECIMAL(18,2) NOT NULL, -- Ej: IVA 19%
+        ReteFuente DECIMAL(18,2) NOT NULL DEFAULT 0,
         Total DECIMAL(18,2) NOT NULL,
         PaymentStatus NVARCHAR(30) DEFAULT 'Por Cobrar' -- Por Cobrar, Pagada Parcial, Pagada Total
     );

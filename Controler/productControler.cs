@@ -8,7 +8,8 @@ namespace Proyecto.Controler
     {
         public string Code { get; set; }
         public string Name { get; set; }
-        public decimal Price { get; set; }
+        public decimal CostPrice { get; set; }
+        public decimal SalePrice { get; set; }
         public int Stock { get; set; }
         public int MinStock { get; set; }
 
@@ -26,7 +27,7 @@ namespace Proyecto.Controler
             }
 
             productModel model = new productModel();
-            return model.InsertProduct(Code, Name, Price, Stock, MinStock);
+            return model.InsertProduct(Code, Name, CostPrice, SalePrice, Stock, MinStock);
         }
 
         public DataTable GetInventory()

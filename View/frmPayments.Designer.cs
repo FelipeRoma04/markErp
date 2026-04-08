@@ -17,6 +17,7 @@ namespace Proyecto.View
             this.txtInvoiceId = new System.Windows.Forms.TextBox();
             this.txtAmount = new System.Windows.Forms.TextBox();
             this.cmbMethod = new System.Windows.Forms.ComboBox();
+            this.lblDebt = new System.Windows.Forms.Label();
             
             this.lblInvoice = new System.Windows.Forms.Label();
             this.lblAmount = new System.Windows.Forms.Label();
@@ -46,6 +47,10 @@ namespace Proyecto.View
             this.btnSave.Size = new System.Drawing.Size(120, 30);
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
 
+            this.lblDebt.Location = new System.Drawing.Point(30, 200);
+            this.lblDebt.Size = new System.Drawing.Size(280, 20);
+            this.lblDebt.Text = "Pendiente factura: -";
+
             this.ClientSize = new System.Drawing.Size(350, 230);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.txtInvoiceId);
@@ -54,6 +59,7 @@ namespace Proyecto.View
             this.Controls.Add(this.lblInvoice);
             this.Controls.Add(this.lblAmount);
             this.Controls.Add(this.lblMethod);
+            this.Controls.Add(this.lblDebt);
             this.Text = "Cuentas por Cobrar";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -66,5 +72,6 @@ namespace Proyecto.View
         private System.Windows.Forms.Label lblInvoice;
         private System.Windows.Forms.Label lblAmount;
         private System.Windows.Forms.Label lblMethod;
+        private System.Windows.Forms.Label lblDebt;
     }
 }

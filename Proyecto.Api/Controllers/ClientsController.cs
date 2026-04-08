@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Proyecto.Api.Data;
+using Proyecto.Api.Services;
 using System.Collections.Generic;
 
 namespace Proyecto.Api.Controllers
@@ -16,7 +17,20 @@ namespace Proyecto.Api.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var dt = await _db.QueryAsync("SELECT * FROM Clients ORDER BY Id DESC", new());
+            var dt = await _db.QueryAsync("SELECT Id, DocumentID, Name, Email, Phone, Address, City FROM Clients ORDER BY Id DESC", new());
+            return Ok(DbService.ToList(dt));
+        }
+
+        // GET /api/clients/search?q=...
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string q)
+        {
+            q = q ?? "";
+            var dt = await _db.QueryAsync(
+                "SELECT TOP 50 Id, DocumentID, Name, Email, Phone, Address, City FROM Clients " +
+                "WHERE DocumentID LIKE @q OR Name LIKE @q OR City LIKE @q " +
+                "ORDER BY Name",
+                new Dictionary<string, object> { ["@q"] = "%" + q + "%" });
             return Ok(DbService.ToList(dt));
         }
 
@@ -25,7 +39,7 @@ namespace Proyecto.Api.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var dt = await _db.QueryAsync(
-                "SELECT * FROM Clients WHERE Id = @id",
+                "SELECT Id, DocumentID, Name, Email, Phone, Address, City FROM Clients WHERE Id = @id",
                 new Dictionary<string, object> { ["@id"] = id });
 
             if (dt.Rows.Count == 0) return NotFound();
@@ -40,16 +54,19 @@ namespace Proyecto.Api.Controllers
                 return BadRequest("DocumentId y Name requeridos.");
 
             bool ok = await _db.ExecuteAsync(
-                "INSERT INTO Clients (DocumentId, Name, Email, Phone, Address) " +
-                "VALUES (@doc, @name, @email, @phone, @address)",
+                "INSERT INTO Clients (DocumentID, Name, Email, Phone, Address, City) " +
+                "VALUES (@doc, @name, @email, @phone, @address, @city)",
                 new Dictionary<string, object>
                 {
                     ["@doc"] = req.DocumentId,
                     ["@name"] = req.Name,
                     ["@email"] = req.Email ?? "",
                     ["@phone"] = req.Phone ?? "",
-                    ["@address"] = req.Address ?? ""
+                    ["@address"] = req.Address ?? "",
+                    ["@city"] = req.City ?? ""
                 });
+
+            if (ok) await AuditHelper.LogAsync(_db, req.User ?? "api", "CREATE", "Clients", req.DocumentId, req.Name);
 
             return ok ? Ok(new { message = "Cliente creado" }) : BadRequest();
         }
@@ -59,7 +76,7 @@ namespace Proyecto.Api.Controllers
         public async Task<IActionResult> Update(int id, [FromBody] CreateClientRequest req)
         {
             bool ok = await _db.ExecuteAsync(
-                "UPDATE Clients SET DocumentId=@doc, Name=@name, Email=@email, Phone=@phone, Address=@address WHERE Id=@id",
+                "UPDATE Clients SET DocumentID=@doc, Name=@name, Email=@email, Phone=@phone, Address=@address, City=@city WHERE Id=@id",
                 new Dictionary<string, object>
                 {
                     ["@id"] = id,
@@ -67,8 +84,11 @@ namespace Proyecto.Api.Controllers
                     ["@name"] = req.Name,
                     ["@email"] = req.Email ?? "",
                     ["@phone"] = req.Phone ?? "",
-                    ["@address"] = req.Address ?? ""
+                    ["@address"] = req.Address ?? "",
+                    ["@city"] = req.City ?? ""
                 });
+
+            if (ok) await AuditHelper.LogAsync(_db, req.User ?? "api", "UPDATE", "Clients", id.ToString(), req.Name);
 
             return ok ? Ok(new { message = "Cliente actualizado" }) : BadRequest();
         }
@@ -81,6 +101,8 @@ namespace Proyecto.Api.Controllers
                 "DELETE FROM Clients WHERE Id=@id",
                 new Dictionary<string, object> { ["@id"] = id });
 
+            if (ok) await AuditHelper.LogAsync(_db, "api", "DELETE", "Clients", id.ToString(), null);
+
             return ok ? Ok(new { message = "Cliente eliminado" }) : BadRequest();
         }
 
@@ -91,6 +113,8 @@ namespace Proyecto.Api.Controllers
             public string Email { get; set; }
             public string Phone { get; set; }
             public string Address { get; set; }
+            public string City { get; set; }
+            public string User { get; set; }
         }
     }
 }

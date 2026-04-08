@@ -122,6 +122,104 @@ namespace Proyecto.Api.Controllers
             return Ok(DbService.ToList(dt));
         }
 
+        // GET /api/accounting/income-statement
+        [HttpGet("income-statement")]
+        public async Task<IActionResult> GetIncomeStatement([FromQuery] DateTime? from = null, [FromQuery] DateTime? to = null)
+        {
+            string dateFilter = "";
+            if (from.HasValue && to.HasValue)
+                dateFilter = $"WHERE je.EntryDate BETWEEN '{from:yyyy-MM-dd}' AND '{to:yyyy-MM-dd}'";
+            else if (from.HasValue)
+                dateFilter = $"WHERE je.EntryDate >= '{from:yyyy-MM-dd}'";
+            else if (to.HasValue)
+                dateFilter = $"WHERE je.EntryDate <= '{to:yyyy-MM-dd}'";
+
+            const string sql = @"
+                SELECT pa.AccountType,
+                       SUM(CASE WHEN jl.Debit > 0 THEN jl.Debit ELSE -jl.Credit END) as Balance
+                FROM JournalLines jl
+                JOIN PUC_Accounts pa ON jl.AccountId = pa.Id
+                JOIN JournalEntries je ON jl.JournalEntryId = je.Id
+                {DATEFILTER}
+                GROUP BY pa.AccountType";
+
+            var dt = await _db.QueryAsync(sql.Replace("{DATEFILTER}", dateFilter), new());
+            decimal ingresos = 0, gastos = 0, costos = 0;
+            foreach (System.Data.DataRow row in dt.Rows)
+            {
+                string type = row["AccountType"].ToString();
+                decimal bal = Convert.ToDecimal(row["Balance"]);
+                if (type == "INGRESO") ingresos += bal;
+                else if (type == "GASTO") gastos += bal;
+                else if (type == "COSTO") costos += bal;
+            }
+            decimal utilidad = ingresos - gastos - costos;
+            return Ok(new { ingresos, gastos, costos, utilidad });
+        }
+
+        // POST /api/accounting/opening
+        [HttpPost("opening")]
+        public async Task<IActionResult> CreateOpening([FromBody] OpenCloseRequest req)
+        {
+            return await CreateJournalWithLines(req, "Asiento de apertura");
+        }
+
+        // POST /api/accounting/closing
+        [HttpPost("closing")]
+        public async Task<IActionResult> CreateClosing([FromBody] OpenCloseRequest req)
+        {
+            return await CreateJournalWithLines(req, "Asiento de cierre");
+        }
+
+        private async Task<IActionResult> CreateJournalWithLines(OpenCloseRequest req, string defaultDesc)
+        {
+            if (req.Lines == null || req.Lines.Count == 0)
+                return BadRequest("Debe enviar lÃ­neas de asiento.");
+
+            bool ok = await _db.ExecuteAsync(
+                "INSERT INTO JournalEntries (EntryDate, Description, CreatedBy, CreatedAt) VALUES (@date, @desc, @user, GETDATE())",
+                new Dictionary<string, object>
+                {
+                    ["@date"] = req.EntryDate == default ? DateTime.Today : req.EntryDate,
+                    ["@desc"] = string.IsNullOrWhiteSpace(req.Description) ? defaultDesc : req.Description,
+                    ["@user"] = req.CreatedBy ?? "api"
+                });
+            if (!ok) return BadRequest();
+
+            var idDt = await _db.QueryAsync("SELECT TOP 1 Id FROM JournalEntries ORDER BY Id DESC");
+            int jeId = Convert.ToInt32(idDt.Rows[0]["Id"]);
+
+            foreach (var l in req.Lines)
+            {
+                await _db.ExecuteAsync(
+                    "INSERT INTO JournalLines (JournalEntryId, AccountId, Debit, Credit) VALUES (@jId, @aId, @debit, @credit)",
+                    new Dictionary<string, object>
+                    {
+                        ["@jId"] = jeId,
+                        ["@aId"] = l.AccountId,
+                        ["@debit"] = l.Debit,
+                        ["@credit"] = l.Credit
+                    });
+            }
+
+            return Ok(new { message = "Asiento creado", journalEntryId = jeId });
+        }
+
+        public class OpenCloseRequest
+        {
+            public DateTime EntryDate { get; set; }
+            public string Description { get; set; }
+            public string CreatedBy { get; set; }
+            public List<JournalLineItem> Lines { get; set; }
+        }
+
+        public class JournalLineItem
+        {
+            public int AccountId { get; set; }
+            public decimal Debit { get; set; }
+            public decimal Credit { get; set; }
+        }
+
         public class CreateJournalRequest
         {
             public DateTime EntryDate { get; set; }

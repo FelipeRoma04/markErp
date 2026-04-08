@@ -1,8 +1,8 @@
 using System;
+using System.Data;
 using System.Drawing;
 using System.Windows.Forms;
 using Proyecto.Controler;
-using System.Data;
 
 namespace Proyecto.View
 {
@@ -27,7 +27,7 @@ namespace Proyecto.View
             if (dt != null)
             {
                 dgvProducts.DataSource = dt;
-                
+
                 // Colorize rows based on MinStock
                 foreach (DataGridViewRow row in dgvProducts.Rows)
                 {
@@ -48,9 +48,9 @@ namespace Proyecto.View
         private void btnExportExcel_Click(object sender, EventArgs e)
         {
             DataTable dt = prodCtrl.GetInventory();
-            if(dt != null) 
+            if (dt != null)
             {
-                if(ReportControler.ExportToExcel(dt, "ProductsInventory_Export"))
+                if (ReportControler.ExportToExcel(dt, "ProductsInventory_Export"))
                 {
                     MessageBox.Show("Excel CSV Generado correctamente.");
                 }
@@ -63,7 +63,8 @@ namespace Proyecto.View
             {
                 prodCtrl.Code = txtCode.Text;
                 prodCtrl.Name = txtName.Text;
-                prodCtrl.Price = decimal.Parse(txtPrice.Text);
+                prodCtrl.CostPrice = decimal.Parse(txtCost.Text);
+                prodCtrl.SalePrice = decimal.Parse(txtSale.Text);
                 prodCtrl.Stock = int.Parse(txtStock.Text);
                 prodCtrl.MinStock = int.Parse(txtMinStock.Text);
 
@@ -75,7 +76,7 @@ namespace Proyecto.View
             }
             catch (Exception)
             {
-                ValidationHelper.ShowValidationError("Los campos numéricos para precio y stock son inválidos.");
+                ValidationHelper.ShowValidationError("Los campos numericos para precio y stock son invalidos.");
             }
         }
     }

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Proyecto.Api.Data;
+using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Proyecto.Api.Controllers
 {
@@ -48,23 +50,32 @@ namespace Proyecto.Api.Controllers
             if (req.EmployeeId <= 0 || req.GrossPay <= 0)
                 return BadRequest("EmployeeId y GrossPay requeridos.");
 
-            decimal deductions = req.GrossPay * 0.08m;
-            decimal netPay = req.GrossPay - deductions;
+            var breakdown = CalculateLegalDeductions(req.GrossPay);
+            decimal totalDeductions = breakdown.TotalDeductions;
+            decimal netPay = req.GrossPay - totalDeductions;
 
             bool ok = await _db.ExecuteAsync(
                 "INSERT INTO Payroll_Log (EmployeeId, PayPeriodStart, PayPeriodEnd, GrossPay, Deductions, NetPay, PaymentDate) " +
-                "VALUES (@empId, @pStart, @pEnd, @gross, @ded, @net, GETDATE())",
+                "VALUES (@empId, @pStart, @pEnd, @gross, @ded, @net, @payDate)",
                 new Dictionary<string, object>
                 {
                     ["@empId"] = req.EmployeeId,
                     ["@pStart"] = req.PayPeriodStart,
                     ["@pEnd"] = req.PayPeriodEnd,
                     ["@gross"] = req.GrossPay,
-                    ["@ded"] = deductions,
-                    ["@net"] = netPay
+                    ["@ded"] = totalDeductions,
+                    ["@net"] = netPay,
+                    ["@payDate"] = req.PaymentDate == default ? DateTime.Now : req.PaymentDate
                 });
 
-            return ok ? Ok(new { message = "Nómina creada" }) : BadRequest();
+            return ok
+                ? Ok(new
+                {
+                    message = "Nomina creada",
+                    netPay,
+                    breakdown
+                })
+                : BadRequest();
         }
 
         public class CreatePayrollRequest
@@ -73,6 +84,40 @@ namespace Proyecto.Api.Controllers
             public DateTime PayPeriodStart { get; set; }
             public DateTime PayPeriodEnd { get; set; }
             public decimal GrossPay { get; set; }
+            public DateTime PaymentDate { get; set; }
+        }
+
+        private static PayrollBreakdown CalculateLegalDeductions(decimal gross)
+        {
+            decimal salud = Math.Round(gross * 0.04m, 2);
+            decimal pension = Math.Round(gross * 0.04m, 2);
+            decimal parafiscales = Math.Round(gross * 0.09m, 2);      // Aportes empresariales aproximados
+            decimal cesantias = Math.Round(gross * 0.0833m, 2);
+            decimal prima = Math.Round(gross * 0.0833m, 2);
+            decimal vacaciones = Math.Round(gross * 0.0417m, 2);
+
+            decimal total = salud + pension + parafiscales + cesantias + prima + vacaciones;
+            return new PayrollBreakdown
+            {
+                Salud = salud,
+                Pension = pension,
+                Parafiscales = parafiscales,
+                Cesantias = cesantias,
+                PrimaServicios = prima,
+                Vacaciones = vacaciones,
+                TotalDeductions = total
+            };
+        }
+
+        public class PayrollBreakdown
+        {
+            public decimal Salud { get; set; }
+            public decimal Pension { get; set; }
+            public decimal Parafiscales { get; set; }
+            public decimal Cesantias { get; set; }
+            public decimal PrimaServicios { get; set; }
+            public decimal Vacaciones { get; set; }
+            public decimal TotalDeductions { get; set; }
         }
     }
 }

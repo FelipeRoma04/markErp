@@ -7,6 +7,7 @@ namespace Proyecto.View
     public partial class frmInvoicing : Form
     {
         salesControler salesCtrl;
+        bool canCreate;
 
         public frmInvoicing()
         {
@@ -14,6 +15,7 @@ namespace Proyecto.View
             salesCtrl = new salesControler();
             dtpIssue.Value = DateTime.Now;
             dtpDue.Value = DateTime.Now.AddDays(15);
+            ApplyPermissions();
         }
 
         private void btnCalc_Click(object sender, EventArgs e)
@@ -35,6 +37,12 @@ namespace Proyecto.View
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (!canCreate)
+            {
+                PermissionHelper.DenyAccess(PermissionHelper.Feature.Invoicing);
+                return;
+            }
+
             try
             {
                 // Validations
@@ -77,6 +85,13 @@ namespace Proyecto.View
             txtTotal.Clear();
             dtpIssue.Value = DateTime.Now;
             dtpDue.Value = DateTime.Now.AddDays(15);
+        }
+
+        private void ApplyPermissions()
+        {
+            canCreate = PermissionHelper.HasPermission(PermissionHelper.Feature.Invoicing, PermissionHelper.Action.Create);
+            btnSave.Enabled = canCreate;
+            btnCalc.Enabled = PermissionHelper.HasPermission(PermissionHelper.Feature.Invoicing, PermissionHelper.Action.View);
         }
     }
 }

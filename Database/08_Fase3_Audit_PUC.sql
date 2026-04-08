@@ -88,3 +88,13 @@ BEGIN
     );
 END
 GO
+
+-- Secuencia de Facturas para numeración consecutiva
+IF NOT EXISTS (SELECT * FROM sys.sequences WHERE name = 'InvoiceNumberSeq')
+BEGIN
+    CREATE SEQUENCE InvoiceNumberSeq
+    AS INT
+    START WITH 1001
+    INCREMENT BY 1;
+END
+GO

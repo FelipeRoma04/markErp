@@ -7,12 +7,14 @@ namespace Proyecto.View
     public partial class frmPayroll : Form
     {
         payrollControler payCtrl;
+        bool canCreate;
 
         public frmPayroll()
         {
             InitializeComponent();
             payCtrl = new payrollControler();
             dtpPayment.Value = DateTime.Now;
+            ApplyPermissions();
         }
 
         private void btnCalc_Click(object sender, EventArgs e)
@@ -34,6 +36,12 @@ namespace Proyecto.View
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (!canCreate)
+            {
+                PermissionHelper.DenyAccess(PermissionHelper.Feature.Payroll);
+                return;
+            }
+
             try 
             {
                 // Validations
@@ -76,6 +84,13 @@ namespace Proyecto.View
             dtpStart.Value = DateTime.Now;
             dtpEnd.Value = DateTime.Now;
             dtpPayment.Value = DateTime.Now;
+        }
+
+        private void ApplyPermissions()
+        {
+            canCreate = PermissionHelper.HasPermission(PermissionHelper.Feature.Payroll, PermissionHelper.Action.Create);
+            btnSave.Enabled = canCreate;
+            btnCalc.Enabled = PermissionHelper.HasPermission(PermissionHelper.Feature.Payroll, PermissionHelper.Action.View);
         }
     }
 }

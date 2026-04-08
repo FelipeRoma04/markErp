@@ -54,12 +54,32 @@ namespace Proyecto
             }
             catch { /* ignore logging failures */ }
 
-            MessageBox.Show(
-                "Ocurrió un error y la aplicación debe cerrarse.\n" +
-                "Revisa el archivo cliente-crash.log junto al ejecutable y comparte el contenido.",
-                "Error inesperado",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Error);
+            // Show the exception details in the dialog to make debugging easier during development
+            try
+            {
+                string message = "Ocurrió un error y la aplicación debe cerrarse.\n" +
+                                 "Revisa el archivo cliente-crash.log junto al ejecutable.\n\n" +
+                                 "Detalles:\n" + ex.ToString();
+
+                MessageBox.Show(
+                    message,
+                    "Error inesperado",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
+            catch
+            {
+                // If showing the detailed dialog fails for any reason, fall back to the simple message.
+                try
+                {
+                    MessageBox.Show(
+                        "Ocurrió un error y la aplicación debe cerrarse.\nRevisa el archivo cliente-crash.log junto al ejecutable.",
+                        "Error inesperado",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error);
+                }
+                catch { }
+            }
 
             Environment.Exit(1);
         }

@@ -28,6 +28,7 @@ namespace Proyecto.Controler
         // Payment properties
         public decimal PaymentAmount { get; set; }
         public string PaymentMethod { get; set; }
+        public string PaymentResultMessage { get; private set; }
         
         public bool CreateQuote()
         {
@@ -44,7 +45,41 @@ namespace Proyecto.Controler
         public bool ApplyPayment()
         {
             salesModel model = new salesModel();
-            return model.InsertPayment(InvoiceId, DateTime.Now, PaymentAmount, PaymentMethod);
+            int targetInvoiceId = InvoiceId;
+
+            // If invoice does not exist, allow paying the quote by converting it
+            if (targetInvoiceId <= 0 && QuoteId > 0)
+            {
+                targetInvoiceId = model.EnsureInvoiceForQuote(QuoteId, ClientId);
+            }
+            else if (!model.InvoiceExists(targetInvoiceId) && model.QuoteExists(targetInvoiceId))
+            {
+                // User typed a QuoteId in the invoice box
+                targetInvoiceId = model.EnsureInvoiceForQuote(targetInvoiceId, ClientId);
+            }
+
+            if (targetInvoiceId <= 0)
+            {
+                PaymentResultMessage = "No se encontro la factura ni la cotizacion indicada.";
+                return false;
+            }
+
+            bool ok = model.InsertPayment(targetInvoiceId, DateTime.Now, PaymentAmount, PaymentMethod);
+            InvoiceId = targetInvoiceId; // expose back to caller
+            PaymentResultMessage = ok ? "Pago registrado y estado de factura actualizado." : "No se pudo registrar el pago.";
+            return ok;
+        }
+
+        public System.Data.DataTable GetClientDebt(int clientId)
+        {
+            salesModel model = new salesModel();
+            return model.GetClientDebt(clientId);
+        }
+
+        public decimal GetInvoicePending(int invoiceId)
+        {
+            salesModel model = new salesModel();
+            return model.GetInvoicePending(invoiceId);
         }
     }
 }

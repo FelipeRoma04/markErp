@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Proyecto.Api.Data;
+using System;
+using System.Collections.Generic;
 
 namespace Proyecto.Api.Controllers
 {
@@ -21,10 +23,8 @@ namespace Proyecto.Api.Controllers
             if (!string.IsNullOrEmpty(status)) { where += " AND Status = @status"; p["@status"] = status; }
 
             var dt = await _db.QueryAsync(
-                $"SELECT a.Id, a.SerialNumber, a.Type, a.Brand, a.Status, " +
-                $"a.PurchasePrice, a.SalvageValue, a.UsefulLifeYears, a.PurchaseDate, " +
-                $"l.Name AS Location " +
-                $"FROM Assets a LEFT JOIN Locations l ON a.LocationId = l.Id {where} ORDER BY a.Id", p);
+                $"SELECT Id, SerialNumber, Type, Brand, Status, Location, PurchaseDate, PurchaseValue, DepreciationMonths, ResidualValue " +
+                $"FROM Assets {where} ORDER BY Id", p);
 
             return Ok(DbService.ToList(dt));
         }
@@ -34,8 +34,7 @@ namespace Proyecto.Api.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             var dt = await _db.QueryAsync(
-                "SELECT a.*, l.Name AS Location FROM Assets a " +
-                "LEFT JOIN Locations l ON a.LocationId = l.Id WHERE a.Id = @id",
+                "SELECT * FROM Assets WHERE Id = @id",
                 new Dictionary<string, object> { ["@id"] = id });
 
             if (dt.Rows.Count == 0) return NotFound(new { error = $"Activo con Id {id} no encontrado." });
@@ -50,17 +49,18 @@ namespace Proyecto.Api.Controllers
                 return BadRequest(new { error = "SerialNumber y Type son obligatorios." });
 
             bool ok = await _db.ExecuteAsync(
-                "INSERT INTO Assets (SerialNumber, Type, Brand, Status, PurchasePrice, SalvageValue, UsefulLifeYears, PurchaseDate, LocationId) " +
-                "VALUES (@serial, @type, @brand, 'Available', @price, @salvage, @life, GETDATE(), @locId)",
+                "INSERT INTO Assets (SerialNumber, Type, Brand, Status, Location, PurchaseDate, PurchaseValue, DepreciationMonths, ResidualValue) " +
+                "VALUES (@serial, @type, @brand, 'Available', @loc, @date, @value, @dep, @residual)",
                 new Dictionary<string, object>
                 {
                     ["@serial"]  = req.SerialNumber,
                     ["@type"]    = req.Type,
                     ["@brand"]   = req.Brand ?? "",
-                    ["@price"]   = req.PurchasePrice,
-                    ["@salvage"] = req.SalvageValue,
-                    ["@life"]    = req.UsefulLifeYears,
-                    ["@locId"]   = req.LocationId > 0 ? (object)req.LocationId : DBNull.Value
+                    ["@loc"]     = req.Location ?? "",
+                    ["@date"]    = req.PurchaseDate == default ? DateTime.Today : req.PurchaseDate,
+                    ["@value"]   = req.PurchaseValue,
+                    ["@dep"]     = req.DepreciationMonths,
+                    ["@residual"]= req.ResidualValue
                 });
 
             if (!ok) return StatusCode(500, new { error = "Error al registrar activo en base de datos." });
@@ -80,6 +80,6 @@ namespace Proyecto.Api.Controllers
 
     public record CreateAssetRequest(
         string SerialNumber, string Type, string? Brand,
-        decimal PurchasePrice, decimal SalvageValue,
-        int UsefulLifeYears, int LocationId);
+        string? Location, DateTime PurchaseDate,
+        decimal PurchaseValue, int DepreciationMonths, decimal ResidualValue);
 }

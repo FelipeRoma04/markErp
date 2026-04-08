@@ -7,6 +7,7 @@ namespace Proyecto.View
     public partial class frmQuotes : Form
     {
         salesControler salesCtrl;
+        bool canCreate;
 
         public frmQuotes()
         {
@@ -14,10 +15,17 @@ namespace Proyecto.View
             salesCtrl = new salesControler();
             dtpIssue.Value = DateTime.Now;
             dtpExpire.Value = DateTime.Now.AddDays(30);
+            ApplyPermissions();
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (!canCreate)
+            {
+                PermissionHelper.DenyAccess(PermissionHelper.Feature.Quotes);
+                return;
+            }
+
             try
             {
                 salesCtrl.ClientId = int.Parse(txtClientId.Text);
@@ -37,6 +45,12 @@ namespace Proyecto.View
             {
                 ValidationHelper.ShowValidationError("Error en guardado: " + ex.Message);
             }
+        }
+
+        private void ApplyPermissions()
+        {
+            canCreate = PermissionHelper.HasPermission(PermissionHelper.Feature.Quotes, PermissionHelper.Action.Create);
+            btnSave.Enabled = canCreate;
         }
     }
 }

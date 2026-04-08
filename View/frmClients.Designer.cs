@@ -19,11 +19,13 @@ namespace Proyecto.View
             this.txtEmail = new System.Windows.Forms.TextBox();
             this.txtPhone = new System.Windows.Forms.TextBox();
             this.txtAddress = new System.Windows.Forms.TextBox();
+            this.txtCity = new System.Windows.Forms.TextBox();
             this.lblDocId = new System.Windows.Forms.Label();
             this.lblName = new System.Windows.Forms.Label();
             this.lblEmail = new System.Windows.Forms.Label();
             this.lblPhone = new System.Windows.Forms.Label();
             this.lblAddress = new System.Windows.Forms.Label();
+            this.lblCity = new System.Windows.Forms.Label();
             this.SuspendLayout();
 
             this.lblDocId.Location = new System.Drawing.Point(30, 30);
@@ -43,31 +45,38 @@ namespace Proyecto.View
             this.txtEmail.Size = new System.Drawing.Size(200, 20);
 
             this.lblPhone.Location = new System.Drawing.Point(30, 150);
-            this.lblPhone.Text = "Work Phone:";
+            this.lblPhone.Text = "Teléfono:";
             this.txtPhone.Location = new System.Drawing.Point(160, 150);
 
             this.lblAddress.Location = new System.Drawing.Point(30, 190);
-            this.lblAddress.Text = "Regional Address:";
+            this.lblAddress.Text = "Dirección:";
             this.txtAddress.Location = new System.Drawing.Point(160, 190);
             this.txtAddress.Size = new System.Drawing.Size(200, 20);
 
-            this.btnSave.Location = new System.Drawing.Point(160, 240);
+            this.lblCity.Location = new System.Drawing.Point(30, 230);
+            this.lblCity.Text = "Ciudad:";
+            this.txtCity.Location = new System.Drawing.Point(160, 230);
+            this.txtCity.Size = new System.Drawing.Size(200, 20);
+
+            this.btnSave.Location = new System.Drawing.Point(160, 270);
             this.btnSave.Text = "Guardar Cliente";
             this.btnSave.Size = new System.Drawing.Size(120, 30);
             this.btnSave.Click += new System.EventHandler(this.btnSave_Click);
 
-            this.ClientSize = new System.Drawing.Size(400, 300);
+            this.ClientSize = new System.Drawing.Size(400, 330);
             this.Controls.Add(this.btnSave);
             this.Controls.Add(this.txtDocId);
             this.Controls.Add(this.txtName);
             this.Controls.Add(this.txtEmail);
             this.Controls.Add(this.txtPhone);
             this.Controls.Add(this.txtAddress);
+            this.Controls.Add(this.txtCity);
             this.Controls.Add(this.lblDocId);
             this.Controls.Add(this.lblName);
             this.Controls.Add(this.lblEmail);
             this.Controls.Add(this.lblPhone);
             this.Controls.Add(this.lblAddress);
+            this.Controls.Add(this.lblCity);
             this.Text = "Administración de Clientes";
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -79,10 +88,12 @@ namespace Proyecto.View
         private System.Windows.Forms.TextBox txtEmail;
         private System.Windows.Forms.TextBox txtPhone;
         private System.Windows.Forms.TextBox txtAddress;
+        private System.Windows.Forms.TextBox txtCity;
         private System.Windows.Forms.Label lblDocId;
         private System.Windows.Forms.Label lblName;
         private System.Windows.Forms.Label lblEmail;
         private System.Windows.Forms.Label lblPhone;
         private System.Windows.Forms.Label lblAddress;
+        private System.Windows.Forms.Label lblCity;
     }
 }
