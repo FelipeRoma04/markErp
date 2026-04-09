@@ -71,7 +71,18 @@ namespace Proyecto.View
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                // If Company table doesn't exist yet, show setup message and create default company object
+                if (ex.Message.Contains("Company") || ex.Message.Contains("Invalid object"))
+                {
+                    currentCompany = new Company();
+                    MessageBox.Show("Database not yet configured. Please run SQL installation script first." + Environment.NewLine +
+                                  "Script: Database\\10_Master_Installation.sql", 
+                                  "Database Setup Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
