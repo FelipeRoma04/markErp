@@ -80,6 +80,11 @@ namespace Proyecto.Model
                 var clients = conexion.ejecutarConsulta("SELECT COUNT(*) AS Total FROM Clients");
                 if (clients != null && clients.Rows.Count > 0)
                     result.TotalClients = Convert.ToInt32(clients.Rows[0]["Total"]);
+
+                // Task 27: Get critical stock count (products with stock <= MinStock)
+                var criticalStock = conexion.ejecutarConsulta("SELECT COUNT(*) AS CriticalCount FROM Products WHERE Stock <= MinStock");
+                if (criticalStock != null && criticalStock.Rows.Count > 0)
+                    result.CriticalStockCount = Convert.ToInt32(criticalStock.Rows[0]["CriticalCount"]);
             }
             catch (Exception ex)
             {
@@ -102,5 +107,6 @@ namespace Proyecto.Model
         public int OverdueCount { get; set; }
         public decimal OverdueAmount { get; set; }
         public int TotalClients { get; set; }
+        public int CriticalStockCount { get; set; }  // Task 27: Products with stock <= MinStock
     }
 }

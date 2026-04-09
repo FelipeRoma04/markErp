@@ -81,5 +81,136 @@ namespace Proyecto.Controler
                 System.Windows.Forms.MessageBoxIcon.Warning
             );
         }
+
+        // Task 26: Role-based UI control methods
+        /// <summary>
+        /// Task 26: Apply UI permissions to delete buttons based on role
+        /// Only Admin and Editor can see delete functionality
+        /// </summary>
+        public static void ApplyDeleteButtonPermissions(System.Windows.Forms.Button btnDelete)
+        {
+            var role = UserSession.Role ?? "Usuario";
+            bool canDelete = RoleActions.ContainsKey(role) && RoleActions[role].Contains(Action.Delete);
+            
+            if (btnDelete != null)
+            {
+                btnDelete.Visible = canDelete;
+                btnDelete.Enabled = canDelete;
+            }
+        }
+
+        /// <summary>
+        /// Task 26: Apply UI permissions to edit buttons
+        /// Lectura role can only view, not edit
+        /// </summary>
+        public static void ApplyEditButtonPermissions(System.Windows.Forms.Button btnEdit)
+        {
+            var role = UserSession.Role ?? "Usuario";
+            bool canEdit = RoleActions.ContainsKey(role) && RoleActions[role].Contains(Action.Edit);
+            
+            if (btnEdit != null)
+            {
+                btnEdit.Visible = canEdit;
+                btnEdit.Enabled = canEdit;
+            }
+        }
+
+        /// <summary>
+        /// Task 26: Apply UI permissions to create buttons
+        /// Lectura role cannot create
+        /// </summary>
+        public static void ApplyCreateButtonPermissions(System.Windows.Forms.Button btnCreate)
+        {
+            var role = UserSession.Role ?? "Usuario";
+            bool canCreate = RoleActions.ContainsKey(role) && RoleActions[role].Contains(Action.Create);
+            
+            if (btnCreate != null)
+            {
+                btnCreate.Visible = canCreate;
+                btnCreate.Enabled = canCreate;
+            }
+        }
+
+        /// <summary>
+        /// Task 26: Apply UI permissions to export buttons
+        /// Only Editor, HR, Finance, Sales can export
+        /// </summary>
+        public static void ApplyExportButtonPermissions(System.Windows.Forms.Button btnExport)
+        {
+            var role = UserSession.Role ?? "Usuario";
+            bool canExport = RoleActions.ContainsKey(role) && RoleActions[role].Contains(Action.Export);
+            
+            if (btnExport != null)
+            {
+                btnExport.Visible = canExport;
+                btnExport.Enabled = canExport;
+            }
+        }
+
+        /// <summary>
+        /// Task 26: Apply UI permissions to entire form based on feature
+        /// Lectura role sees read-only versions of forms
+        /// </summary>
+        public static void ApplyFormPermissions(System.Windows.Forms.Form form, Feature feature)
+        {
+            var role = UserSession.Role ?? "Usuario";
+            bool hasFeatureAccess = RoleFeatures.ContainsKey(role) && RoleFeatures[role].Contains(feature);
+            bool canEdit = RoleActions.ContainsKey(role) && RoleActions[role].Contains(Action.Edit);
+            bool canDelete = RoleActions.ContainsKey(role) && RoleActions[role].Contains(Action.Delete);
+
+            if (!hasFeatureAccess)
+            {
+                form.Enabled = false;
+                return;
+            }
+
+            // Disable all buttons if only View permission
+            if (!canEdit && !canDelete)
+            {
+                foreach (System.Windows.Forms.Control control in form.Controls)
+                {
+                    if (control is System.Windows.Forms.Button && control.Name != "btnClose")
+                    {
+                        control.Enabled = false;
+                    }
+                }
+            }
+
+            // Set controls to ReadOnly if Lectura role
+            if (role == "Lectura")
+            {
+                foreach (System.Windows.Forms.Control control in GetAllControls(form))
+                {
+                    if (control is System.Windows.Forms.TextBox)
+                        ((System.Windows.Forms.TextBox)control).ReadOnly = true;
+                    else if (control is System.Windows.Forms.ComboBox)
+                        ((System.Windows.Forms.ComboBox)control).Enabled = false;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Task 26: Recursively get all controls from a form (including nested containers)
+        /// </summary>
+        private static List<System.Windows.Forms.Control> GetAllControls(System.Windows.Forms.Control parent)
+        {
+            var controls = new List<System.Windows.Forms.Control>();
+            foreach (System.Windows.Forms.Control control in parent.Controls)
+            {
+                controls.Add(control);
+                controls.AddRange(GetAllControls(control));
+            }
+            return controls;
+        }
+
+        /// <summary>
+        /// Task 26: Check if user can perform feature action
+        /// Returns enabled status for UI controls
+        /// </summary>
+        public static bool IsFeatureEnabled(Feature feature)
+        {
+            var role = UserSession.Role ?? "Usuario";
+            return RoleFeatures.ContainsKey(role) && RoleFeatures[role].Contains(feature);
+        }
     }
 }

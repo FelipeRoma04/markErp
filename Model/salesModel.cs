@@ -15,7 +15,7 @@ namespace Proyecto.Model
 
         public bool InsertQuote(int clientId, DateTime issueDate, DateTime expireDate, decimal total)
         {
-            const string q = "INSERT INTO Quotes (ClientId, IssueDate, ExpirationDate, TotalAmount, Status) VALUES (@clientId, @issue, @exp, @total, 'Pendiente')";
+            const string q = "INSERT INTO Quotes (ClientId, IssueDate, ExpirationDate, TotalAmount, Status) VALUES (@clientId, @issue, @exp, @total, 'Pendiente'); SELECT SCOPE_IDENTITY();";
             var parameters = new Dictionary<string, object>
             {
                 ["@clientId"] = clientId,
@@ -23,12 +23,13 @@ namespace Proyecto.Model
                 ["@exp"] = expireDate,
                 ["@total"] = total
             };
-            return conexion.ejecutarComandoParametrizado(q, parameters) > 0;
+            var dt = conexion.ejecutarConsultaParametrizada(q, parameters);
+            return dt != null && dt.Rows.Count > 0;
         }
 
         public bool InsertInvoice(int quoteId, int clientId, DateTime issueDate, DateTime dueDate, decimal subtotal, decimal totalTax, decimal total)
         {
-            const string q = "INSERT INTO Invoices (QuoteId, ClientId, IssueDate, DueDate, Subtotal, TotalTax, Total, PaymentStatus) VALUES (@quoteId, @clientId, @issue, @due, @sub, @tax, @total, 'Por Cobrar')";
+            const string q = "INSERT INTO Invoices (QuoteId, ClientId, IssueDate, DueDate, Subtotal, TotalTax, Total, PaymentStatus) VALUES (@quoteId, @clientId, @issue, @due, @sub, @tax, @total, 'Por Cobrar'); SELECT SCOPE_IDENTITY();";
             var parameters = new Dictionary<string, object>
             {
                 ["@quoteId"] = quoteId,
@@ -39,12 +40,13 @@ namespace Proyecto.Model
                 ["@tax"] = totalTax,
                 ["@total"] = total
             };
-            return conexion.ejecutarComandoParametrizado(q, parameters) > 0;
+            var dt = conexion.ejecutarConsultaParametrizada(q, parameters);
+            return dt != null && dt.Rows.Count > 0;
         }
         
         public bool InsertPayment(int invoiceId, DateTime paymentDate, decimal amount, string method)
         {
-            const string q = "INSERT INTO Payments (InvoiceId, PaymentDate, Amount, Method) VALUES (@invoiceId, @date, @amount, @method)";
+            const string q = "INSERT INTO Payments (InvoiceId, PaymentDate, Amount, Method) VALUES (@invoiceId, @date, @amount, @method); SELECT SCOPE_IDENTITY();";
             var parameters = new Dictionary<string, object>
             {
                 ["@invoiceId"] = invoiceId,
@@ -53,7 +55,8 @@ namespace Proyecto.Model
                 ["@method"] = method
             };
 
-            bool ok = conexion.ejecutarComandoParametrizado(q, parameters) > 0;
+            var dt = conexion.ejecutarConsultaParametrizada(q, parameters);
+            bool ok = dt != null && dt.Rows.Count > 0;
             if (ok)
             {
                 UpdateInvoiceStatus(invoiceId);
@@ -156,6 +159,45 @@ namespace Proyecto.Model
                 ["@id"] = invoiceId
             };
             conexion.ejecutarComandoParametrizado("UPDATE Invoices SET PaymentStatus=@st WHERE Id=@id", parameters);
+        }
+
+        // Task 30: Get payment history for display
+        public DataTable GetPaymentHistory(int invoiceId)
+        {
+            const string sql = @"
+                SELECT PaymentDate, Amount, Method AS PaymentMethod
+                FROM Payments
+                WHERE InvoiceId = @invoiceId
+                ORDER BY PaymentDate DESC";
+
+            var parameters = new Dictionary<string, object> { ["@invoiceId"] = invoiceId };
+            return conexion.ejecutarConsultaParametrizada(sql, parameters);
+        }
+
+        // Task 30: Get invoice total amount
+        public decimal GetInvoiceTotal(int invoiceId)
+        {
+            const string sql = "SELECT Total FROM Invoices WHERE Id = @id";
+            var parameters = new Dictionary<string, object> { ["@id"] = invoiceId };
+            var dt = conexion.ejecutarConsultaParametrizada(sql, parameters);
+            if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["Total"] != DBNull.Value)
+                return Convert.ToDecimal(dt.Rows[0]["Total"]);
+            return 0;
+        }
+
+        // Task 30: Get total paid amount for invoice
+        public decimal GetInvoiceTotalPaid(int invoiceId)
+        {
+            const string sql = @"
+                SELECT ISNULL(SUM(Amount), 0) AS TotalPaid
+                FROM Payments
+                WHERE InvoiceId = @invoiceId";
+
+            var parameters = new Dictionary<string, object> { ["@invoiceId"] = invoiceId };
+            var dt = conexion.ejecutarConsultaParametrizada(sql, parameters);
+            if (dt != null && dt.Rows.Count > 0 && dt.Rows[0]["TotalPaid"] != DBNull.Value)
+                return Convert.ToDecimal(dt.Rows[0]["TotalPaid"]);
+            return 0;
         }
     }
 }

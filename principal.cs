@@ -29,6 +29,10 @@ namespace Proyecto
         {
             ApplyButtonStyles();
             ApplyRoleUi();
+            
+            // FASE 4 - Task 39: Initialize automatic backup (admin only)
+            BackupUtility.InitializeBackupSchedule(2, 0); // 2:00 AM daily
+            
             await LoadKpisAsync();
         }
 
@@ -294,15 +298,50 @@ namespace Proyecto
             {
                 var dashCtrl = new Proyecto.Controler.dashboardControler();
                 var kpis = await dashCtrl.GetKpiSnapshotAsync();
-                lblKPI.Text = $"Productos: {kpis.TotalProducts}\n" +
-                              $"Ventas (historico): {kpis.TotalSales:C}\n" +
+                
+                // Format with Colombian locale
+                var coCulture = new System.Globalization.CultureInfo("es-CO");
+                string salesFormatted = kpis.TotalSales.ToString("C", coCulture);
+                string overdueFormatted = kpis.OverdueAmount.ToString("C", coCulture);
+                
+                // Task 27: Add critical stock alert
+                string criticalStockAlert = "";
+                if (kpis.CriticalStockCount > 0)
+                {
+                    criticalStockAlert = $"⚠️ ALERTA STOCK: {kpis.CriticalStockCount} producto(s) en nivel crítico\n";
+                }
+                
+                lblKPI.Text = criticalStockAlert +
+                              $"Productos: {kpis.TotalProducts}\n" +
+                              $"Ventas (histórico): {salesFormatted}\n" +
                               $"Facturas por cobrar: {kpis.PendingInvoices}\n" +
-                              $"Vencido: {kpis.OverdueAmount:C}\n" +
+                              $"Vencido: {overdueFormatted}\n" +
                               $"Clientes: {kpis.TotalClients}";
             }
             catch
             {
                 lblKPI.Text = "Error loading metrics.";
+            }
+        }
+
+        private void btnSettings_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                // FASE 4 - Task 37: Admin-only Company Settings
+                if (Proyecto.Controler.UserSession.Role != "Admin")
+                {
+                    MessageBox.Show("Solo administradores pueden acceder a la configuración.", "Acceso Denegado", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                View.frmSettings frm = new View.frmSettings();
+                frm.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                LogError("frmSettings", ex);
+                MessageBox.Show("Error al abrir Configuración: " + ex.Message + "\n\nVer debug.log para más detalles", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

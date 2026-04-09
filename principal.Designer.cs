@@ -41,6 +41,7 @@ namespace Proyecto
             this.btnAssets = new System.Windows.Forms.Button();
             this.btnAccounting = new System.Windows.Forms.Button();
             this.btnAudit = new System.Windows.Forms.Button();
+            this.btnSettings = new System.Windows.Forms.Button();
             this.lblKPI = new System.Windows.Forms.Label();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.pnlContent = new System.Windows.Forms.Panel();
@@ -180,6 +181,16 @@ namespace Proyecto
             this.btnAudit.UseVisualStyleBackColor = true;
             this.btnAudit.Click += new System.EventHandler(this.btnAudit_Click);
             
+            // btnSettings
+            //
+            this.btnSettings.Location = new System.Drawing.Point(380, 410);
+            this.btnSettings.Name = "btnSettings";
+            this.btnSettings.Size = new System.Drawing.Size(170, 60);
+            this.btnSettings.TabIndex = 14;
+            this.btnSettings.Text = "⚙️ Configuración";
+            this.btnSettings.UseVisualStyleBackColor = true;
+            this.btnSettings.Click += new System.EventHandler(this.btnSettings_Click);
+            
             // lblHrSection
             //
             this.lblHrSection.AutoSize = true;
@@ -232,6 +243,7 @@ namespace Proyecto
             this.Controls.Add(this.lblInventorySection);
             this.Controls.Add(this.lblSalesSection);
             this.Controls.Add(this.lblHrSection);
+            this.Controls.Add(this.btnSettings);
             this.Controls.Add(this.btnAudit);
             this.Controls.Add(this.btnAccounting);
             this.Controls.Add(this.lblKPI);
@@ -269,6 +281,7 @@ namespace Proyecto
         private System.Windows.Forms.Button btnAssets;
         private System.Windows.Forms.Button btnAccounting;
         private System.Windows.Forms.Button btnAudit;
+        private System.Windows.Forms.Button btnSettings;
         private System.Windows.Forms.Label lblKPI;
         private System.Windows.Forms.Panel pnlHeader;
         private System.Windows.Forms.Panel pnlContent;

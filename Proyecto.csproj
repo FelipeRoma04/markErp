@@ -65,6 +65,15 @@
     <Compile Include="Controler\PermissionHelper.cs" />
     <Compile Include="Controler\UserSession.cs" />
     <Compile Include="Controler\ValidationHelper.cs" />
+    <Compile Include="Controler\AuditLogger.cs" />
+    <Compile Include="Controler\AccountingEntryLogger.cs" />
+    <Compile Include="Controler\StockMovementLogger.cs" />
+    <Compile Include="Controler\PayrollSlipPDF.cs" />
+    <Compile Include="Controler\FinancialReportGenerator.cs" />
+    <Compile Include="Controler\ReportExporters.cs" />
+    <Compile Include="Controler\CriticalStockReportPDF.cs" />
+    <Compile Include="Controler\DashboardCharts.cs" />
+    <Compile Include="Controler\BackupUtility.cs" />
     <Compile Include="Model\accountingModel.cs" />
     <Compile Include="Model\assetModel.cs" />
     <Compile Include="Model\auditModel.cs" />
@@ -78,6 +87,7 @@
     <Compile Include="Model\payrollModel.cs" />
     <Compile Include="Model\productModel.cs" />
     <Compile Include="Model\salesModel.cs" />
+    <Compile Include="Model\companyModel.cs" />
     <Compile Include="principal.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -169,6 +179,12 @@
     </Compile>
     <Compile Include="View\frmPayroll.Designer.cs">
       <DependentUpon>frmPayroll.cs</DependentUpon>
+    </Compile>
+    <Compile Include="View\frmSettings.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="View\frmSettings.Designer.cs">
+      <DependentUpon>frmSettings.cs</DependentUpon>
     </Compile>
     <EmbeddedResource Include="principal.resx">
       <DependentUpon>principal.cs</DependentUpon>

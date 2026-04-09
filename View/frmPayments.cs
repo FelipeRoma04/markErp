@@ -1,6 +1,7 @@
 using System;
 using System.Windows.Forms;
 using Proyecto.Controler;
+using System.Data;
 
 namespace Proyecto.View
 {
@@ -35,6 +36,8 @@ namespace Proyecto.View
                 {
                     MessageBox.Show($"Pago por {salesCtrl.PaymentAmount:C} procesado via {salesCtrl.PaymentMethod}.", "Cobro Exitoso", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     LoadDebt();
+                    LoadPaymentHistory(); // Task 30: Refresh payment history after payment
+                    txtAmount.Clear();
                 }
                 else
                 {
@@ -63,6 +66,52 @@ namespace Proyecto.View
 
             decimal pending = salesCtrl.GetInvoicePending(invoiceId);
             lblDebt.Text = $"Pendiente factura: {pending:C}";
+        }
+
+        // Task 30: Auto-load payment history when InvoiceId changes
+        private void txtInvoiceId_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Tab || e.KeyCode == Keys.Enter)
+            {
+                LoadDebt();
+                LoadPaymentHistory();
+                e.Handled = true;
+            }
+        }
+
+        private void LoadPaymentHistory()
+        {
+            if (!int.TryParse(txtInvoiceId.Text, out int invoiceId))
+            {
+                dgvPaymentHistory.DataSource = null;
+                lblHistoryDebt.Text = "Total Pendiente: -";
+                return;
+            }
+
+            try
+            {
+                DataTable paymentData = salesCtrl.GetPaymentHistory(invoiceId);
+                dgvPaymentHistory.DataSource = paymentData;
+                
+                // Rename columns for display
+                if (dgvPaymentHistory.Columns.Contains("PaymentDate"))
+                    dgvPaymentHistory.Columns["PaymentDate"].HeaderText = "Fecha de Pago";
+                if (dgvPaymentHistory.Columns.Contains("Amount"))
+                    dgvPaymentHistory.Columns["Amount"].HeaderText = "Monto";
+                if (dgvPaymentHistory.Columns.Contains("PaymentMethod"))
+                    dgvPaymentHistory.Columns["PaymentMethod"].HeaderText = "Método";
+
+                // Calculate and display pending balance
+                decimal invoiceTotal = salesCtrl.GetInvoiceTotal(invoiceId);
+                decimal totalPaid = salesCtrl.GetInvoiceTotalPaid(invoiceId);
+                decimal pending = invoiceTotal - totalPaid;
+
+                lblHistoryDebt.Text = $"Total Factura: {invoiceTotal:C}  |  Total Pagado: {totalPaid:C}  |  Pendiente: {pending:C}";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error cargando historial: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

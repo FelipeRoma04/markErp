@@ -1,5 +1,6 @@
 using System;
 using Proyecto.Model;
+using System.Data;
 
 namespace Proyecto.Controler
 {
@@ -39,7 +40,15 @@ namespace Proyecto.Controler
         public bool CreateInvoice()
         {
             salesModel model = new salesModel();
-            return model.InsertInvoice(QuoteId, ClientId, IssueDate, DueDate, Subtotal, TotalTax, Total);
+            bool invoiceCreated = model.InsertInvoice(QuoteId, ClientId, IssueDate, DueDate, Subtotal, TotalTax, Total);
+            
+            // Task 28: Auto-generate accounting entry when invoice is created
+            if (invoiceCreated)
+            {
+                AccountingEntryLogger.LogInvoiceEntry(InvoiceId, ClientId, Subtotal, TotalTax, Total);
+            }
+            
+            return invoiceCreated;
         }
 
         public bool ApplyPayment()
@@ -66,6 +75,14 @@ namespace Proyecto.Controler
 
             bool ok = model.InsertPayment(targetInvoiceId, DateTime.Now, PaymentAmount, PaymentMethod);
             InvoiceId = targetInvoiceId; // expose back to caller
+            
+            // Task 29: Auto-generate accounting entry when payment is received
+            if (ok)
+            {
+                // Get payment ID (would need to enhance model to return it)
+                AccountingEntryLogger.LogPaymentEntry(targetInvoiceId, 0, PaymentAmount, PaymentMethod);
+            }
+            
             PaymentResultMessage = ok ? "Pago registrado y estado de factura actualizado." : "No se pudo registrar el pago.";
             return ok;
         }
@@ -80,6 +97,27 @@ namespace Proyecto.Controler
         {
             salesModel model = new salesModel();
             return model.GetInvoicePending(invoiceId);
+        }
+
+        // Task 30: Expose payment history query
+        public DataTable GetPaymentHistory(int invoiceId)
+        {
+            salesModel model = new salesModel();
+            return model.GetPaymentHistory(invoiceId);
+        }
+
+        // Task 30: Expose invoice total query
+        public decimal GetInvoiceTotal(int invoiceId)
+        {
+            salesModel model = new salesModel();
+            return model.GetInvoiceTotal(invoiceId);
+        }
+
+        // Task 30: Expose total paid query
+        public decimal GetInvoiceTotalPaid(int invoiceId)
+        {
+            salesModel model = new salesModel();
+            return model.GetInvoiceTotalPaid(invoiceId);
         }
     }
 }
