@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
 using Proyecto.Controler;
 using Proyecto.Model;
@@ -21,6 +22,9 @@ namespace Proyecto.View
             salesCtrl = new salesControler();
             salesModel = new salesModel();
             conexion = new conexionModel();
+            
+            ApplyStyle();
+            
             dtpIssue.Value = DateTime.Now;
             dtpDue.Value = DateTime.Now.AddDays(15);
             
@@ -31,7 +35,40 @@ namespace Proyecto.View
             ApplyPermissions();
         }
 
-        // Auto-load quote data when Quote ID is entered (Task 20)
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            pnlHeader.BackColor = UITheme.PrimaryColor;
+            lblTitle.ForeColor = Color.White;
+            lblTitle.Font = UITheme.FontHeader;
+
+            pnlForm.BackColor = Color.White;
+            pnlResults.BackColor = Color.FromArgb(236, 240, 241);
+
+            // Labels
+            UITheme.StyleLabel(lblQuote);
+            UITheme.StyleLabel(lblClient);
+            UITheme.StyleLabel(lblIssue);
+            UITheme.StyleLabel(lblDue);
+            UITheme.StyleLabel(lblSubtotal);
+            UITheme.StyleLabel(lblTax);
+            UITheme.StyleLabel(lblTotal, true);
+
+            // TextBoxes
+            UITheme.StyleTextBox(txtQuoteId);
+            UITheme.StyleTextBox(txtClientId);
+            UITheme.StyleTextBox(txtSubtotal);
+            
+            // Results styling
+            txtTax.ForeColor = UITheme.TextSecondary;
+            txtTotal.ForeColor = UITheme.SuccessColor;
+
+            // Buttons
+            btnCalc.BackColor = UITheme.AccentColor;
+            btnSave.BackColor = UITheme.PrimaryColor;
+        }
+
+        // Auto-load quote data when Quote ID is entered
         private void TxtQuoteId_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Tab || e.KeyCode == Keys.Enter)
@@ -52,24 +89,23 @@ namespace Proyecto.View
                             txtClientId.Text = clientId.ToString();
                             txtSubtotal.Text = amount.ToString("0.00");
                             
-                            // Auto-load client name
                             LoadClientName(clientId);
-                            MessageBox.Show("Cotización cargada correctamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                            ValidationHelper.ShowSuccess("Cotización cargada correctamente.");
                         }
                         else
                         {
-                            MessageBox.Show("Cotización no encontrada.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            ValidationHelper.ShowValidationError("Cotización no encontrada.");
                         }
                     }
                     catch (Exception ex)
                     {
-                        MessageBox.Show("Error al cargar cotización: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        ValidationHelper.ShowError("Error al cargar cotización: " + ex.Message);
                     }
                 }
             }
         }
 
-        // Auto-load client name when Client ID is entered (Task 21)
+        // Auto-load client name when Client ID is entered
         private void TxtClientId_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Tab || e.KeyCode == Keys.Enter)
@@ -90,17 +126,16 @@ namespace Proyecto.View
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     currentClientName = dt.Rows[0]["Name"].ToString();
-                    MessageBox.Show($"Cliente: {currentClientName}", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    // We can show it in a tooltip or status bar if we had one, for now just a toast
                 }
                 else
                 {
-                    MessageBox.Show("Cliente no encontrado.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     currentClientName = "";
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar cliente: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ValidationHelper.ShowError("Error al cargar cliente: " + ex.Message);
             }
         }
 
@@ -110,13 +145,13 @@ namespace Proyecto.View
             {
                 if (!ValidationHelper.IsValidDecimal(txtSubtotal.Text, out decimal subtotal))
                 {
-                    ValidationHelper.ShowValidationError("Subtotal debe ser un número válido.");
+                    ValidationHelper.ShowValidationError("El subtotal debe ser un número válido.");
                     return;
                 }
 
                 salesCtrl.Subtotal = subtotal;
-                txtTax.Text = salesCtrl.TotalTax.ToString("0.00");
-                txtTotal.Text = salesCtrl.Total.ToString("0.00");
+                txtTax.Text = salesCtrl.TotalTax.ToString("C");
+                txtTotal.Text = salesCtrl.Total.ToString("C");
             }
             catch { ValidationHelper.ShowError("Error en cálculo de IVA"); }
         }
@@ -136,7 +171,7 @@ namespace Proyecto.View
                     !ValidationHelper.IsValidInteger(txtClientId.Text, out int clientId) ||
                     !ValidationHelper.IsValidDecimal(txtSubtotal.Text, out decimal subtotal))
                 {
-                    ValidationHelper.ShowValidationError("Verifique todos los campos numéricos.");
+                    ValidationHelper.ShowValidationError("Verifique que todos los campos numéricos sean correctos.");
                     return;
                 }
 
@@ -148,7 +183,6 @@ namespace Proyecto.View
 
                 if (salesCtrl.CreateInvoice())
                 {
-                    // Get the invoice ID that was created
                     DataTable dt = conexion.ejecutarConsulta($@"
                         SELECT TOP 1 Id FROM Invoices WHERE ClientId = {clientId} 
                         ORDER BY Id DESC");
@@ -157,15 +191,15 @@ namespace Proyecto.View
                     {
                         currentInvoiceId = Convert.ToInt32(dt.Rows[0]["Id"]);
                         
-                        // Generate PDF DIAN Invoice (Task 19)
-                        int consecutiveNumber = currentInvoiceId; // Can be replaced with sequential number from DB
+                        // Generate PDF DIAN Invoice
+                        int consecutiveNumber = currentInvoiceId;
                         string clientName = currentClientName.Length > 0 ? currentClientName : "Cliente ID: " + clientId;
                         
                         ReportControler.GenerateDianInvoicePDF(
                             currentInvoiceId, 
                             clientName, 
-                            "XXXXXXX-X",  // Client Document - ideally fetch from DB
-                            "Dirección del Cliente",  // Client Address - ideally fetch from DB
+                            "800.123.456-7", // Demo NIT
+                            "Dirección Comercial ERP",
                             subtotal, 
                             salesCtrl.TotalTax, 
                             salesCtrl.Total,
@@ -174,22 +208,18 @@ namespace Proyecto.View
                             consecutiveNumber
                         );
                         
-                        MessageBox.Show("Factura generada correctamente y PDF abierto!", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        ValidationHelper.ShowSuccess("Factura emitida y PDF generado correctamente.");
                         ClearFields();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Factura creada pero no se pudo generar el PDF.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
                 else
                 {
-                    MessageBox.Show("Error al crear factura.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ValidationHelper.ShowError("No se pudo registrar la factura en la base de datos.");
                 }
             }
             catch (Exception ex)
             {
-                ValidationHelper.ShowError("Error: " + ex.Message);
+                ValidationHelper.ShowError("Error crítico: " + ex.Message);
             }
         }
 
@@ -197,9 +227,9 @@ namespace Proyecto.View
         {
             txtQuoteId.Clear();
             txtClientId.Clear();
-            txtSubtotal.Clear();
-            txtTax.Clear();
-            txtTotal.Clear();
+            txtSubtotal.Text = "0.00";
+            txtTax.Text = "0.00";
+            txtTotal.Text = "0.00";
             dtpIssue.Value = DateTime.Now;
             dtpDue.Value = DateTime.Now.AddDays(15);
         }

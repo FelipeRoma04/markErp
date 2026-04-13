@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Windows.Forms;
 using Proyecto.Controler;
 using Proyecto.Model;
@@ -19,24 +20,28 @@ namespace Proyecto.View
 
         private void ApplyStyles()
         {
-            // Header styling
-            if (pnlHeader != null)
-            {
-                pnlHeader.BackColor = System.Drawing.Color.FromArgb(41, 128, 185);
-            }
+            this.BackColor = UITheme.BgColor;
+            
+            // Header
+            pnlHeader.BackColor = UITheme.PrimaryColor;
+            lblTitle.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
+            lblTitle.ForeColor = Color.White;
 
-            // Button styling
-            btnLogin.BackColor = System.Drawing.Color.FromArgb(46, 204, 113);
-            btnLogin.ForeColor = System.Drawing.Color.White;
-            btnLogin.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            // Labels
+            UITheme.StyleLabel(lblUser);
+            UITheme.StyleLabel(lblPass);
+            
+            // TextBoxes
+            UITheme.StyleTextBox(txtUser);
+            UITheme.StyleTextBox(txtPass);
+
+            // Button
+            btnLogin.BackColor = UITheme.SuccessColor;
+            btnLogin.ForeColor = Color.White;
+            btnLogin.FlatStyle = FlatStyle.Flat;
             btnLogin.FlatAppearance.BorderSize = 0;
-            btnLogin.Cursor = System.Windows.Forms.Cursors.Hand;
-
-            // TextBox styling
-            txtUser.BackColor = System.Drawing.Color.White;
-            txtUser.ForeColor = System.Drawing.Color.FromArgb(44, 62, 80);
-            txtPass.BackColor = System.Drawing.Color.White;
-            txtPass.ForeColor = System.Drawing.Color.FromArgb(44, 62, 80);
+            btnLogin.Cursor = Cursors.Hand;
+            btnLogin.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
         }
 
         private void TestDbConnection()
@@ -45,67 +50,47 @@ namespace Proyecto.View
             {
                 var conn = new conexionModel();
                 var err = conn.ProbarConexion();
-                var cs = conn.ObtenerCadenaConexion();
-                string masked = cs;
-                try
-                {
-                    // Mask password if present
-                    if (cs != null && cs.IndexOf("Password=", StringComparison.OrdinalIgnoreCase) >= 0)
-                    {
-                        var parts = cs.Split(';');
-                        for (int i = 0; i < parts.Length; i++)
-                        {
-                            if (parts[i].StartsWith("Password=", StringComparison.OrdinalIgnoreCase))
-                                parts[i] = "Password=****";
-                        }
-                        masked = string.Join(";", parts);
-                    }
-                }
-                catch { masked = "(error al obtener cadena)"; }
+                
                 if (!string.IsNullOrWhiteSpace(err))
                 {
-                    // Show brief message and direct user to the crash log for full details
-                    MessageBox.Show("No se pudo conectar a la base de datos. Revisa cliente-crash.log para más detalles.\n\n" +
-                                    "Cadena usada:\n" + masked + "\n\n" +
-                                    "Resumen error:\n" + (err.Length > 1000 ? err.Substring(0, 1000) + "..." : err),
-                                    "Error conexión DB",
-                                    MessageBoxButtons.OK,
-                                    MessageBoxIcon.Warning);
+                    MessageBox.Show("Advertencia: No se pudo verificar la conexión a la base de datos local. El inicio de sesión podría fallar.", 
+                                    "Error de Conexión", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
-            catch (Exception ex)
-            {
-                try { System.IO.File.AppendAllText(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cliente-crash.log"), $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss}] TestDbConnection failure: {ex}\n\n"); } catch { }
-                MessageBox.Show("Error al probar la conexión a la base de datos. Revisa cliente-crash.log.", "Error conexión DB", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            catch { /* Ignore non-critical test errors during load */ }
+        }
+
+        private void chkShowPass_CheckedChanged(object sender, EventArgs e)
+        {
+            txtPass.PasswordChar = chkShowPass.Checked ? '\0' : '●';
         }
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrWhiteSpace(txtUser.Text) || string.IsNullOrWhiteSpace(txtPass.Text))
             {
-                MessageBox.Show("Please fill all fields.", "Validation Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ValidationHelper.ShowValidationError("Por favor, complete todos los campos.");
                 return;
             }
 
             _authCtrl.Username = txtUser.Text.Trim();
-            _authCtrl.Password = txtPass.Text.Trim(); // In real app, hash this before sending
+            _authCtrl.Password = txtPass.Text.Trim();
 
             try
             {
                 if (_authCtrl.IniciarSesion())
                 {
-                    this.DialogResult = DialogResult.OK; // Signals Program.cs to continue
+                    this.DialogResult = DialogResult.OK;
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show("Incorrect Username or Password.", "Authentication Failed", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ValidationHelper.ShowError("Usuario o contraseña incorrectos.");
                 }
             }
             catch (Exception ex)
             {
-                // Log minimal info to file next to exe to help debugging
+                // Log error
                 try
                 {
                     var path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cliente-crash.log");
@@ -113,7 +98,7 @@ namespace Proyecto.View
                 }
                 catch { }
 
-                MessageBox.Show("Ocurrió un error durante el intento de autenticación. Revisa cliente-crash.log.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ValidationHelper.ShowError("Ocurrió un error inesperado. Consulte el log de sistema.");
             }
         }
     }

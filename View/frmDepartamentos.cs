@@ -26,12 +26,6 @@ namespace Proyecto.View
         {
             odepartamentoControler = new departamentoControler();
             InitializeComponent();
-
-            this.Load += FrmDepartamentos_Load;
-            btnModificar.Click += BtnModificar_Click;
-            btnBorrar.Click += BtnBorrar_Click;
-            btnCancelar.Click += BtnCancelar_Click;
-            dgvDepartamentos.CellMouseClick += DgvDepartamentos_CellMouseClick;
         }
 
         private void label2_Click(object sender, EventArgs e)
@@ -49,25 +43,26 @@ namespace Proyecto.View
 
             try 
             {
-                //obtener info de la interfaz grafica
                 recuperarInformacion();
                 
                 if (odepartamentoControler.agregar())
                 {
-                    MessageBox.Show("Departamento agregado exitosamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowSuccess("Departamento agregado exitosamente.");
+                    CargarDepartamentos();
+                    Limpiar();
                 }
                 else
                 {
-                    MessageBox.Show("No se pudo agregar el departamento.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ValidationHelper.ShowError("No se pudo agregar el departamento.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error de sistema: " + ex.Message, "Error Crítico", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ValidationHelper.ShowError("Error de sistema: " + ex.Message);
             }
         }
 
-        private void BtnModificar_Click(object sender, EventArgs e)
+        private void btnModificar_Click(object sender, EventArgs e)
         {
             if (!ValidationHelper.IsValidInteger(txtId.Text, out int id))
             {
@@ -101,7 +96,7 @@ namespace Proyecto.View
             }
         }
 
-        private void BtnBorrar_Click(object sender, EventArgs e)
+        private void btnBorrar_Click(object sender, EventArgs e)
         {
             if (!ValidationHelper.IsValidInteger(txtId.Text, out int id))
             {
@@ -132,16 +127,34 @@ namespace Proyecto.View
             }
         }
 
-        private void BtnCancelar_Click(object sender, EventArgs e)
+        private void btnCancelar_Click(object sender, EventArgs e)
         {
             Limpiar();
         }
 
-        private void FrmDepartamentos_Load(object sender, EventArgs e)
+        private void frmDepartamentos_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
             ApplyPermissions();
             CargarDepartamentos();
             Limpiar();
+        }
+
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            UITheme.StyleLabel(id);
+            UITheme.StyleLabel(nombreDepartamento);
+            UITheme.StyleTextBox(txtId);
+            UITheme.StyleTextBox(txtNombreDepartamento);
+            UITheme.StyleDataGrid(dgvDepartamentos);
+            
+            // Buttons are already styled via Designer properties I set, 
+            // but ensuring they match theme colors just in case:
+            btnAgregar.BackColor = UITheme.SuccessColor;
+            btnModificar.BackColor = UITheme.AccentColor;
+            btnBorrar.BackColor = UITheme.DangerColor;
+            btnCancelar.BackColor = UITheme.SecondaryColor;
         }
 
         private void CargarDepartamentos()
@@ -159,13 +172,13 @@ namespace Proyecto.View
             btnBorrar.Enabled = false;
         }
 
-        private void DgvDepartamentos_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void dgvDepartamentos_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
                 DataGridViewRow row = dgvDepartamentos.Rows[e.RowIndex];
-                txtId.Text = row.Cells["Id"].Value.ToString();
-                txtNombreDepartamento.Text = row.Cells["departamento"].Value.ToString();
+                txtId.Text = row.Cells[0].Value.ToString();
+                txtNombreDepartamento.Text = row.Cells[1].Value.ToString();
 
                 btnAgregar.Enabled = false;
                 btnModificar.Enabled = canEdit;

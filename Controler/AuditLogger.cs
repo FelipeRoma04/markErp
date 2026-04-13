@@ -85,6 +85,38 @@ namespace Proyecto.Controler
             Log(null, ActionType.DELETE, tableName, recordId, description);
         }
 
+        public static void LogUpdateWithDelta(string tableName, string recordId, Dictionary<string, object> oldValues, Dictionary<string, object> newValues)
+        {
+            string delta = CalculateDelta(oldValues, newValues);
+            Log(null, ActionType.UPDATE, tableName, recordId, $"Cambios detectados: {delta}");
+        }
+
+        private static string CalculateDelta(Dictionary<string, object> oldValues, Dictionary<string, object> newValues)
+        {
+            if (oldValues == null || newValues == null) return "Sin datos de comparación.";
+
+            List<string> changes = new List<string>();
+            foreach (var key in newValues.Keys)
+            {
+                if (oldValues.ContainsKey(key))
+                {
+                    var oldVal = oldValues[key]?.ToString() ?? "NULL";
+                    var newVal = newValues[key]?.ToString() ?? "NULL";
+
+                    if (oldVal != newVal)
+                    {
+                        changes.Add($"{key}: '{oldVal}' → '{newVal}'");
+                    }
+                }
+                else
+                {
+                    changes.Add($"{key}: [NUEVO] '{newValues[key]}'");
+                }
+            }
+
+            return changes.Count > 0 ? string.Join(", ", changes) : "Sin cambios significativos.";
+        }
+
         public static void LogLogin(string username)
         {
             Log(username, ActionType.LOGIN, "Users", username, $"Usuario {username} inició sesión");

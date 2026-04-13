@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using System.Drawing;
 using System.IO;
@@ -11,42 +11,82 @@ namespace Proyecto.View
     {
         empleadosControler empleadoCtrl;
         byte[] fotoSeleccionada = null;
+        bool canCreate;
+        bool canEdit;
+        bool canDelete;
 
         public frmEmpleados()
         {
             InitializeComponent();
             empleadoCtrl = new empleadosControler();
-            
-            // Wire events
-            btnAgregar.Click += BtnAgregar_Click;
-            btnModificar.Click += BtnModificar_Click;
-            btnBorrar.Click += BtnBorrar_Click;
-            btnCancelar.Click += BtnCancelar_Click;
-            btnExaminar.Click += BtnExaminar_Click;
-            dgvEmpleados.CellMouseClick += DgvEmpleados_CellMouseClick;
-            this.Load += FrmEmpleados_Load;
         }
 
-        private void FrmEmpleados_Load(object sender, EventArgs e)
+        private void frmEmpleados_Load(object sender, EventArgs e)
         {
+            ApplyStyle();
+            ApplyPermissions();
             CargarDepartamentos();
             ActualizarGrilla();
             LimpiarFormulario();
         }
 
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            UITheme.StyleLabel(id);
+            UITheme.StyleLabel(name);
+            UITheme.StyleLabel(primerApellido);
+            UITheme.StyleLabel(segundoApellido);
+            UITheme.StyleLabel(Email);
+            UITheme.StyleLabel(departamento);
+
+            UITheme.StyleTextBox(txtId);
+            UITheme.StyleTextBox(txtName);
+            UITheme.StyleTextBox(txtLastName);
+            UITheme.StyleTextBox(txtSecondName);
+            UITheme.StyleTextBox(txtEmail);
+            
+            UITheme.StyleDataGrid(dgvEmpleados);
+
+            btnAgregar.BackColor = UITheme.SuccessColor;
+            btnModificar.BackColor = UITheme.AccentColor;
+            btnBorrar.BackColor = UITheme.DangerColor;
+            btnCancelar.BackColor = UITheme.SecondaryColor;
+        }
+
+        private void ApplyPermissions()
+        {
+            canCreate = PermissionHelper.HasPermission(PermissionHelper.Feature.Employees, PermissionHelper.Action.Create);
+            canEdit = PermissionHelper.HasPermission(PermissionHelper.Feature.Employees, PermissionHelper.Action.Edit);
+            canDelete = PermissionHelper.HasPermission(PermissionHelper.Feature.Employees, PermissionHelper.Action.Delete);
+        }
+
         private void CargarDepartamentos()
         {
-            // Simple query to fill cbxDepartamento
-            Proyecto.Model.conexionModel cnx = new Proyecto.Model.conexionModel();
-            DataTable dt = cnx.ejecutarConsulta("SELECT * FROM Departamentos");
-            cbxDepartamento.DataSource = dt;
-            cbxDepartamento.DisplayMember = "departamento";
-            cbxDepartamento.ValueMember = "Id";
+            try
+            {
+                Proyecto.Model.conexionModel cnx = new Proyecto.Model.conexionModel();
+                DataTable dt = cnx.ejecutarConsulta("SELECT * FROM Departamentos");
+                cbxDepartamento.DataSource = dt;
+                cbxDepartamento.DisplayMember = "departamento";
+                cbxDepartamento.ValueMember = "Id";
+                cbxDepartamento.SelectedIndex = -1;
+            }
+            catch (Exception ex)
+            {
+                ValidationHelper.ShowError("Error al cargar departamentos: " + ex.Message);
+            }
         }
 
         private void ActualizarGrilla()
         {
             dgvEmpleados.DataSource = empleadoCtrl.listar();
+            if (dgvEmpleados.Columns.Count > 0)
+            {
+                if (dgvEmpleados.Columns.Contains("Id")) dgvEmpleados.Columns["Id"].Visible = false;
+                if (dgvEmpleados.Columns.Contains("PicFoto")) dgvEmpleados.Columns["PicFoto"].Visible = false;
+                if (dgvEmpleados.Columns.Contains("DepartmentId")) dgvEmpleados.Columns["DepartmentId"].Visible = false;
+            }
         }
 
         private void LimpiarFormulario()
@@ -60,7 +100,7 @@ namespace Proyecto.View
             picFoto.Image = null;
             fotoSeleccionada = null;
             
-            btnAgregar.Enabled = true;
+            btnAgregar.Enabled = canCreate;
             btnModificar.Enabled = false;
             btnBorrar.Enabled = false;
         }
@@ -86,7 +126,7 @@ namespace Proyecto.View
             empleadoCtrl.picFoto = fotoSeleccionada;
         }
 
-        private void BtnAgregar_Click(object sender, EventArgs e)
+        private void btnAgregar_Click(object sender, EventArgs e)
         {
             if (!ValidationHelper.IsNotEmpty(txtName.Text) || !ValidationHelper.IsNotEmpty(txtLastName.Text))
             {
@@ -100,20 +140,27 @@ namespace Proyecto.View
                 return;
             }
 
-            RecolectarDatos();
-            if (empleadoCtrl.agregar())
+            try
             {
-                ValidationHelper.ShowSuccess("Empleado agregado correctamente.");
-                ActualizarGrilla();
-                LimpiarFormulario();
+                RecolectarDatos();
+                if (empleadoCtrl.agregar())
+                {
+                    ValidationHelper.ShowSuccess("Empleado agregado correctamente.");
+                    ActualizarGrilla();
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    ValidationHelper.ShowError("No se pudo agregar el empleado.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ValidationHelper.ShowError("Error al agregar empleado.");
+                ValidationHelper.ShowError("Error de sistema: " + ex.Message);
             }
         }
 
-        private void BtnModificar_Click(object sender, EventArgs e)
+        private void btnModificar_Click(object sender, EventArgs e)
         {
             if (!ValidationHelper.IsValidInteger(txtId.Text, out _))
             {
@@ -127,62 +174,81 @@ namespace Proyecto.View
                 return;
             }
 
-            RecolectarDatos();
-            if (empleadoCtrl.modificar())
+            try
             {
-                ValidationHelper.ShowSuccess("Empleado modificado correctamente.");
-                ActualizarGrilla();
-                LimpiarFormulario();
+                RecolectarDatos();
+                if (empleadoCtrl.modificar())
+                {
+                    ValidationHelper.ShowSuccess("Empleado modificado correctamente.");
+                    ActualizarGrilla();
+                    LimpiarFormulario();
+                }
+                else
+                {
+                    ValidationHelper.ShowError("No se pudo modificar el empleado.");
+                }
             }
-            else
+            catch (Exception ex)
             {
-                ValidationHelper.ShowError("Error al modificar empleado.");
+                ValidationHelper.ShowError("Error de sistema: " + ex.Message);
             }
         }
 
-                private void BtnBorrar_Click(object sender, EventArgs e)
+        private void btnBorrar_Click(object sender, EventArgs e)
         {
             if (!ValidationHelper.IsValidInteger(txtId.Text, out _))
             {
-                ValidationHelper.ShowValidationError("Selecciona un registro v�lido para eliminar.");
+                ValidationHelper.ShowValidationError("Selecciona un registro válido para eliminar.");
                 return;
             }
 
-            RecolectarDatos();
-            if (MessageBox.Show("�Seguro que deseas eliminar este empleado?", "Confirmar", MessageBoxButtons.YesNo) == DialogResult.Yes)
+            if (MessageBox.Show("¿Seguro que deseas eliminar este empleado?", "Confirmar Eliminación", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
             {
-                if (empleadoCtrl.eliminar())
+                try
                 {
-                    ValidationHelper.ShowSuccess("Empleado eliminado.");
-                    ActualizarGrilla();
-                    LimpiarFormulario();
+                    RecolectarDatos();
+                    if (empleadoCtrl.eliminar())
+                    {
+                        ValidationHelper.ShowSuccess("Empleado eliminado definitivamente.");
+                        ActualizarGrilla();
+                        LimpiarFormulario();
+                    }
+                    else
+                    {
+                        ValidationHelper.ShowError("No se pudo eliminar el empleado.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ValidationHelper.ShowError("Error de sistema: " + ex.Message);
                 }
             }
         }
 
-        private void BtnCancelar_Click(object sender, EventArgs e)
+        private void btnCancelar_Click(object sender, EventArgs e)
         {
             LimpiarFormulario();
         }
 
-        private void BtnExaminar_Click(object sender, EventArgs e)
+        private void btnExaminar_Click(object sender, EventArgs e)
         {
-            OpenFileDialog dlg = new OpenFileDialog();
-            dlg.Filter = "Imagenes|*.jpg;*.jpeg;*.png;*.bmp;";
-            if (dlg.ShowDialog() == DialogResult.OK)
+            using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                picFoto.Image = Image.FromFile(dlg.FileName);
-                picFoto.SizeMode = PictureBoxSizeMode.Zoom;
-                
-                using (MemoryStream ms = new MemoryStream())
+                dlg.Filter = "Imagenes|*.jpg;*.jpeg;*.png;*.bmp;";
+                if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    picFoto.Image.Save(ms, picFoto.Image.RawFormat);
-                    fotoSeleccionada = ms.ToArray();
+                    picFoto.Image = Image.FromFile(dlg.FileName);
+                    
+                    using (MemoryStream ms = new MemoryStream())
+                    {
+                        picFoto.Image.Save(ms, picFoto.Image.RawFormat);
+                        fotoSeleccionada = ms.ToArray();
+                    }
                 }
             }
         }
 
-        private void DgvEmpleados_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        private void dgvEmpleados_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             if (e.RowIndex >= 0)
             {
@@ -196,14 +262,12 @@ namespace Proyecto.View
                 if (row.Cells["DepartmentId"].Value != DBNull.Value)
                     cbxDepartamento.SelectedValue = row.Cells["DepartmentId"].Value;
 
-                if (row.Cells["PicFoto"].Value != DBNull.Value)
+                if (row.Cells["PicFoto"].Value != DBNull.Value && row.Cells["PicFoto"].Value is byte[] bytes)
                 {
-                    byte[] bytes = (byte[])row.Cells["PicFoto"].Value;
                     fotoSeleccionada = bytes;
                     using (MemoryStream ms = new MemoryStream(bytes))
                     {
                         picFoto.Image = Image.FromStream(ms);
-                        picFoto.SizeMode = PictureBoxSizeMode.Zoom;
                     }
                 }
                 else
@@ -213,14 +277,9 @@ namespace Proyecto.View
                 }
 
                 btnAgregar.Enabled = false;
-                btnModificar.Enabled = true;
-                btnBorrar.Enabled = true;
+                btnModificar.Enabled = canEdit;
+                btnBorrar.Enabled = canDelete;
             }
         }
-
-        private void pictureBox1_Click(object sender, EventArgs e) { }
-        private void textBox1_TextChanged(object sender, EventArgs e) { }
-        private void label6_Click(object sender, EventArgs e) { }
     }
 }
-

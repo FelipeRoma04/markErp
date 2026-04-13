@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
 using Proyecto.Controler;
 
@@ -13,7 +14,62 @@ namespace Proyecto.View
         {
             InitializeComponent();
             actCtrl = new assetControler();
+            ApplyStyle();
             this.Load += FrmAssets_Load;
+        }
+
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            pnlHeader.BackColor = UITheme.PrimaryColor;
+            lblTitle.ForeColor = Color.White;
+            lblTitle.Font = UITheme.FontHeader;
+
+            // Tabs
+            tabActivos.BackColor = Color.White;
+            tabAsignacion.BackColor = Color.White;
+            tabMantenimiento.BackColor = Color.White;
+
+            // Grids
+            UITheme.StyleDataGrid(dgvActivos);
+            UITheme.StyleDataGrid(dgvHistory);
+            UITheme.StyleDataGrid(dgvMaint);
+
+            // Labels
+            UITheme.StyleLabel(lblSerial);
+            UITheme.StyleLabel(lblType);
+            UITheme.StyleLabel(lblBrand);
+            UITheme.StyleLabel(lblSede);
+            UITheme.StyleLabel(lblPurchasePrice);
+            UITheme.StyleLabel(lblSalvage);
+            UITheme.StyleLabel(lblUsefulLife);
+            UITheme.StyleLabel(lblAssetId);
+            UITheme.StyleLabel(lblEmpId);
+            UITheme.StyleLabel(lblAsign);
+            UITheme.StyleLabel(lblMaintAssetId);
+            UITheme.StyleLabel(lblMaintDesc);
+            UITheme.StyleLabel(lblMaintDate);
+            
+            UITheme.StyleLabel(lblDepreciation, true);
+            lblDepreciationValue.ForeColor = UITheme.SuccessColor;
+
+            // TextBoxes
+            UITheme.StyleTextBox(txtSerial);
+            UITheme.StyleTextBox(txtBrand);
+            UITheme.StyleTextBox(txtPurchasePrice);
+            UITheme.StyleTextBox(txtSalvage);
+            UITheme.StyleTextBox(txtUsefulLife);
+            UITheme.StyleTextBox(txtAssetId);
+            UITheme.StyleTextBox(txtEmpId);
+            UITheme.StyleTextBox(txtMaintAssetId);
+            UITheme.StyleTextBox(txtMaintDesc);
+
+            // Buttons
+            btnSaveAsset.BackColor = UITheme.SuccessColor;
+            btnSearch.BackColor = UITheme.AccentColor;
+            btnAssign.BackColor = UITheme.PrimaryColor;
+            btnScheduleMaint.BackColor = UITheme.AccentColor;
+            btnLoadMaint.BackColor = UITheme.SecondaryColor;
         }
 
         private void FrmAssets_Load(object sender, EventArgs e)
@@ -46,6 +102,12 @@ namespace Proyecto.View
 
         private void btnSaveAsset_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtSerial.Text) || string.IsNullOrWhiteSpace(txtBrand.Text))
+            {
+                ValidationHelper.ShowValidationError("El número de serie y la marca son obligatorios.");
+                return;
+            }
+
             try
             {
                 actCtrl.SerialNumber = txtSerial.Text;
@@ -54,22 +116,22 @@ namespace Proyecto.View
                 actCtrl.PurchasePrice = ParseDecimal(txtPurchasePrice.Text);
                 actCtrl.SalvageValue = ParseDecimal(txtSalvage.Text);
                 actCtrl.UsefulLifeYears = ParseInt(txtUsefulLife.Text);
-                actCtrl.LocationId = cmbSede.SelectedValue != null ? ParseInt(cmbSede.SelectedValue.ToString()) : 0;
+                actCtrl.LocationId = cmbSede.SelectedValue != null ? Convert.ToInt32(cmbSede.SelectedValue) : 0;
 
                 if (actCtrl.CreateAsset())
                 {
-                    MessageBox.Show("Activo registrado correctamente.", "Registro", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowSuccess("Activo registrado correctamente.");
                     CargarActivos();
                     LimpiarFormActivo();
                 }
                 else
                 {
-                    MessageBox.Show("Error al registrar el activo. Verifica los datos.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ValidationHelper.ShowError("No se pudo registrar el activo. Verifique la conexión a base de datos.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error: " + ex.Message);
+                ValidationHelper.ShowError("Error inesperado: " + ex.Message);
             }
         }
 
@@ -86,7 +148,6 @@ namespace Proyecto.View
                 txtSalvage.Text = row.Cells["SalvageValue"].Value?.ToString();
                 txtUsefulLife.Text = row.Cells["UsefulLifeYears"].Value?.ToString();
 
-                // Show current depreciated value
                 decimal purchase = ParseDecimal(row.Cells["PurchasePrice"].Value?.ToString());
                 decimal salvage = ParseDecimal(row.Cells["SalvageValue"].Value?.ToString());
                 int life = ParseInt(row.Cells["UsefulLifeYears"].Value?.ToString());
@@ -117,6 +178,12 @@ namespace Proyecto.View
 
         private void btnAssign_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtAssetId.Text) || string.IsNullOrWhiteSpace(txtEmpId.Text))
+            {
+                ValidationHelper.ShowValidationError("Debe indicar el ID del activo y el ID del empleado.");
+                return;
+            }
+
             try
             {
                 actCtrl.AssetId = int.Parse(txtAssetId.Text);
@@ -125,24 +192,25 @@ namespace Proyecto.View
 
                 if (actCtrl.BindAssetToEmployee())
                 {
-                    MessageBox.Show("Activo asignado al empleado.", "Asignación", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowSuccess("Activo asignado exitosamente al empleado.");
                     LoadHistory();
                 }
             }
             catch (Exception)
             {
-                ValidationHelper.ShowValidationError("Revisa que los IDs sean válidos.");
+                ValidationHelper.ShowValidationError("Asegúrese de que los IDs sean números válidos.");
             }
         }
 
         private void btnSearch_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtAssetId.Text)) return;
             try
             {
                 actCtrl.AssetId = int.Parse(txtAssetId.Text);
                 LoadHistory();
             }
-            catch (Exception) { }
+            catch { }
         }
 
         private void LoadHistory()
@@ -152,11 +220,17 @@ namespace Proyecto.View
         }
 
         // ─────────────────────────────────────────
-        // TAB 3: Mantenimiento Preventivo
+        // TAB 3: Mantenimiento
         // ─────────────────────────────────────────
 
         private void btnScheduleMaint_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtMaintAssetId.Text) || string.IsNullOrWhiteSpace(txtMaintDesc.Text))
+            {
+                ValidationHelper.ShowValidationError("Indique el ID del activo y la descripción del mantenimiento.");
+                return;
+            }
+
             try
             {
                 actCtrl.AssetId = ParseInt(txtMaintAssetId.Text);
@@ -165,19 +239,12 @@ namespace Proyecto.View
 
                 if (actCtrl.ScheduleMaintenance(desc, fecha))
                 {
-                    MessageBox.Show("Mantenimiento programado exitosamente.", "OK", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowSuccess("Mantenimiento programado.");
                     CargarMantenimiento();
                     txtMaintDesc.Clear();
                 }
-                else
-                {
-                    MessageBox.Show("Error al programar el mantenimiento.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
             }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error: " + ex.Message);
-            }
+            catch (Exception ex) { ValidationHelper.ShowError(ex.Message); }
         }
 
         private void btnLoadMaint_Click(object sender, EventArgs e)
@@ -187,6 +254,7 @@ namespace Proyecto.View
 
         private void CargarMantenimiento()
         {
+            if (string.IsNullOrWhiteSpace(txtMaintAssetId.Text)) return;
             actCtrl.AssetId = ParseInt(txtMaintAssetId.Text);
             DataTable dt = actCtrl.ConsultMaintenance();
             if (dt != null) dgvMaint.DataSource = dt;
@@ -199,7 +267,8 @@ namespace Proyecto.View
         private decimal ParseDecimal(string val)
         {
             decimal result;
-            decimal.TryParse(val?.Replace(",", "."), System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out result);
+            string clean = val?.Replace("$", "").Replace(" ", "").Replace(",", ".");
+            decimal.TryParse(clean, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out result);
             return result;
         }
 

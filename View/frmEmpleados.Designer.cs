@@ -1,4 +1,7 @@
-﻿namespace Proyecto.View
+using System.Drawing;
+using Proyecto.Controler;
+
+namespace Proyecto.View
 {
     partial class frmEmpleados
     {
@@ -47,178 +50,247 @@
             this.btnBorrar = new System.Windows.Forms.Button();
             this.btnCancelar = new System.Windows.Forms.Button();
             this.dgvEmpleados = new System.Windows.Forms.DataGridView();
+            this.lblHeaderPanel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.picFoto)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvEmpleados)).BeginInit();
             this.SuspendLayout();
             // 
+            // lblHeaderPanel
+            // 
+            this.lblHeaderPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblHeaderPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblHeaderPanel.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lblHeaderPanel.ForeColor = System.Drawing.Color.White;
+            this.lblHeaderPanel.Location = new System.Drawing.Point(0, 0);
+            this.lblHeaderPanel.Name = "lblHeaderPanel";
+            this.lblHeaderPanel.Size = new System.Drawing.Size(900, 45);
+            this.lblHeaderPanel.TabIndex = 20;
+            this.lblHeaderPanel.Text = "  Gestión de Talento Humano - Empleados";
+            this.lblHeaderPanel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // picFoto
+            // 
+            this.picFoto.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(224)))), ((int)(((byte)(224)))), ((int)(((byte)(224)))));
+            this.picFoto.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.picFoto.Location = new System.Drawing.Point(30, 65);
+            this.picFoto.Name = "picFoto";
+            this.picFoto.Size = new System.Drawing.Size(160, 200);
+            this.picFoto.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
+            this.picFoto.TabIndex = 12;
+            this.picFoto.TabStop = false;
+            // 
+            // btnExaminar
+            // 
+            this.btnExaminar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(152)))), ((int)(((byte)(219)))));
+            this.btnExaminar.FlatAppearance.BorderSize = 0;
+            this.btnExaminar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExaminar.Font = new System.Drawing.Font("Segoe UI", 8F, System.Drawing.FontStyle.Bold);
+            this.btnExaminar.ForeColor = System.Drawing.Color.White;
+            this.btnExaminar.Location = new System.Drawing.Point(30, 275);
+            this.btnExaminar.Name = "btnExaminar";
+            this.btnExaminar.Size = new System.Drawing.Size(160, 30);
+            this.btnExaminar.TabIndex = 13;
+            this.btnExaminar.Text = "Subir Foto";
+            this.btnExaminar.UseVisualStyleBackColor = false;
+            this.btnExaminar.Click += new System.EventHandler(this.btnExaminar_Click);
+            // 
             // id
             // 
             this.id.AutoSize = true;
-            this.id.Location = new System.Drawing.Point(226, 3);
+            this.id.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.id.Location = new System.Drawing.Point(210, 65);
             this.id.Name = "id";
-            this.id.Size = new System.Drawing.Size(23, 16);
+            this.id.Size = new System.Drawing.Size(27, 20);
             this.id.TabIndex = 0;
             this.id.Text = "ID:";
             // 
             // txtId
             // 
-            this.txtId.Location = new System.Drawing.Point(216, 32);
+            this.txtId.Enabled = false;
+            this.txtId.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtId.Location = new System.Drawing.Point(210, 90);
             this.txtId.Name = "txtId";
-            this.txtId.Size = new System.Drawing.Size(167, 22);
+            this.txtId.Size = new System.Drawing.Size(100, 27);
             this.txtId.TabIndex = 1;
-            this.txtId.TextChanged += new System.EventHandler(this.textBox1_TextChanged);
-            // 
-            // txtName
-            // 
-            this.txtName.Location = new System.Drawing.Point(425, 32);
-            this.txtName.Name = "txtName";
-            this.txtName.Size = new System.Drawing.Size(210, 22);
-            this.txtName.TabIndex = 2;
-            // 
-            // txtLastName
-            // 
-            this.txtLastName.Location = new System.Drawing.Point(216, 99);
-            this.txtLastName.Name = "txtLastName";
-            this.txtLastName.Size = new System.Drawing.Size(167, 22);
-            this.txtLastName.TabIndex = 3;
-            // 
-            // txtSecondName
-            // 
-            this.txtSecondName.Location = new System.Drawing.Point(425, 99);
-            this.txtSecondName.Name = "txtSecondName";
-            this.txtSecondName.Size = new System.Drawing.Size(210, 22);
-            this.txtSecondName.TabIndex = 4;
-            // 
-            // txtEmail
-            // 
-            this.txtEmail.Location = new System.Drawing.Point(216, 165);
-            this.txtEmail.Name = "txtEmail";
-            this.txtEmail.Size = new System.Drawing.Size(419, 22);
-            this.txtEmail.TabIndex = 5;
-            // 
-            // cbxDepartamento
-            // 
-            this.cbxDepartamento.FormattingEnabled = true;
-            this.cbxDepartamento.Location = new System.Drawing.Point(216, 232);
-            this.cbxDepartamento.Name = "cbxDepartamento";
-            this.cbxDepartamento.Size = new System.Drawing.Size(419, 24);
-            this.cbxDepartamento.TabIndex = 6;
             // 
             // name
             // 
             this.name.AutoSize = true;
-            this.name.Location = new System.Drawing.Point(437, 3);
+            this.name.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.name.Location = new System.Drawing.Point(330, 65);
             this.name.Name = "name";
-            this.name.Size = new System.Drawing.Size(59, 16);
+            this.name.Size = new System.Drawing.Size(67, 20);
             this.name.TabIndex = 7;
             this.name.Text = "Nombre:";
+            // 
+            // txtName
+            // 
+            this.txtName.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtName.Location = new System.Drawing.Point(330, 90);
+            this.txtName.Name = "txtName";
+            this.txtName.Size = new System.Drawing.Size(419, 27);
+            this.txtName.TabIndex = 2;
             // 
             // primerApellido
             // 
             this.primerApellido.AutoSize = true;
-            this.primerApellido.Location = new System.Drawing.Point(226, 71);
+            this.primerApellido.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.primerApellido.Location = new System.Drawing.Point(210, 125);
             this.primerApellido.Name = "primerApellido";
-            this.primerApellido.Size = new System.Drawing.Size(102, 16);
+            this.primerApellido.Size = new System.Drawing.Size(116, 20);
             this.primerApellido.TabIndex = 8;
             this.primerApellido.Text = "Primer Apellido:";
+            // 
+            // txtLastName
+            // 
+            this.txtLastName.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtLastName.Location = new System.Drawing.Point(210, 150);
+            this.txtLastName.Name = "txtLastName";
+            this.txtLastName.Size = new System.Drawing.Size(260, 27);
+            this.txtLastName.TabIndex = 3;
             // 
             // segundoApellido
             // 
             this.segundoApellido.AutoSize = true;
-            this.segundoApellido.Location = new System.Drawing.Point(437, 71);
+            this.segundoApellido.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.segundoApellido.Location = new System.Drawing.Point(489, 125);
             this.segundoApellido.Name = "segundoApellido";
-            this.segundoApellido.Size = new System.Drawing.Size(118, 16);
+            this.segundoApellido.Size = new System.Drawing.Size(132, 20);
             this.segundoApellido.TabIndex = 9;
             this.segundoApellido.Text = "Segundo Apellido:";
+            // 
+            // txtSecondName
+            // 
+            this.txtSecondName.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtSecondName.Location = new System.Drawing.Point(489, 150);
+            this.txtSecondName.Name = "txtSecondName";
+            this.txtSecondName.Size = new System.Drawing.Size(260, 27);
+            this.txtSecondName.TabIndex = 4;
             // 
             // Email
             // 
             this.Email.AutoSize = true;
-            this.Email.Location = new System.Drawing.Point(226, 137);
+            this.Email.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.Email.Location = new System.Drawing.Point(210, 185);
             this.Email.Name = "Email";
-            this.Email.Size = new System.Drawing.Size(51, 16);
+            this.Email.Size = new System.Drawing.Size(57, 20);
             this.Email.TabIndex = 10;
             this.Email.Text = "Correo:";
+            // 
+            // txtEmail
+            // 
+            this.txtEmail.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtEmail.Location = new System.Drawing.Point(210, 210);
+            this.txtEmail.Name = "txtEmail";
+            this.txtEmail.Size = new System.Drawing.Size(539, 27);
+            this.txtEmail.TabIndex = 5;
             // 
             // departamento
             // 
             this.departamento.AutoSize = true;
-            this.departamento.Location = new System.Drawing.Point(226, 202);
+            this.departamento.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.departamento.Location = new System.Drawing.Point(210, 245);
             this.departamento.Name = "departamento";
-            this.departamento.Size = new System.Drawing.Size(96, 16);
+            this.departamento.Size = new System.Drawing.Size(108, 20);
             this.departamento.TabIndex = 11;
             this.departamento.Text = "Departamento:";
-            this.departamento.Click += new System.EventHandler(this.label6_Click);
             // 
-            // picFoto
+            // cbxDepartamento
             // 
-            this.picFoto.Location = new System.Drawing.Point(28, 3);
-            this.picFoto.Name = "picFoto";
-            this.picFoto.Size = new System.Drawing.Size(172, 253);
-            this.picFoto.TabIndex = 12;
-            this.picFoto.TabStop = false;
-            this.picFoto.Click += new System.EventHandler(this.pictureBox1_Click);
-            // 
-            // btnExaminar
-            // 
-            this.btnExaminar.Location = new System.Drawing.Point(37, 274);
-            this.btnExaminar.Name = "btnExaminar";
-            this.btnExaminar.Size = new System.Drawing.Size(159, 23);
-            this.btnExaminar.TabIndex = 13;
-            this.btnExaminar.Text = "Examinar...";
-            this.btnExaminar.UseVisualStyleBackColor = true;
+            this.cbxDepartamento.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbxDepartamento.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.cbxDepartamento.FormattingEnabled = true;
+            this.cbxDepartamento.Location = new System.Drawing.Point(210, 270);
+            this.cbxDepartamento.Name = "cbxDepartamento";
+            this.cbxDepartamento.Size = new System.Drawing.Size(539, 28);
+            this.cbxDepartamento.TabIndex = 6;
             // 
             // btnAgregar
             // 
-            this.btnAgregar.Location = new System.Drawing.Point(229, 274);
+            this.btnAgregar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
+            this.btnAgregar.FlatAppearance.BorderSize = 0;
+            this.btnAgregar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAgregar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAgregar.ForeColor = System.Drawing.Color.White;
+            this.btnAgregar.Location = new System.Drawing.Point(210, 315);
             this.btnAgregar.Name = "btnAgregar";
-            this.btnAgregar.Size = new System.Drawing.Size(75, 23);
+            this.btnAgregar.Size = new System.Drawing.Size(120, 35);
             this.btnAgregar.TabIndex = 14;
             this.btnAgregar.Text = "Agregar";
-            this.btnAgregar.UseVisualStyleBackColor = true;
+            this.btnAgregar.UseVisualStyleBackColor = false;
+            this.btnAgregar.Click += new System.EventHandler(this.btnAgregar_Click);
             // 
             // btnModificar
             // 
-            this.btnModificar.Location = new System.Drawing.Point(333, 274);
+            this.btnModificar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(126)))), ((int)(((byte)(34)))));
+            this.btnModificar.FlatAppearance.BorderSize = 0;
+            this.btnModificar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnModificar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnModificar.ForeColor = System.Drawing.Color.White;
+            this.btnModificar.Location = new System.Drawing.Point(340, 315);
             this.btnModificar.Name = "btnModificar";
-            this.btnModificar.Size = new System.Drawing.Size(75, 23);
+            this.btnModificar.Size = new System.Drawing.Size(120, 35);
             this.btnModificar.TabIndex = 15;
             this.btnModificar.Text = "Modificar";
-            this.btnModificar.UseVisualStyleBackColor = true;
+            this.btnModificar.UseVisualStyleBackColor = false;
+            this.btnModificar.Click += new System.EventHandler(this.btnModificar_Click);
             // 
             // btnBorrar
             // 
-            this.btnBorrar.Location = new System.Drawing.Point(433, 274);
+            this.btnBorrar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(57)))), ((int)(((byte)(43)))));
+            this.btnBorrar.FlatAppearance.BorderSize = 0;
+            this.btnBorrar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnBorrar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnBorrar.ForeColor = System.Drawing.Color.White;
+            this.btnBorrar.Location = new System.Drawing.Point(470, 315);
             this.btnBorrar.Name = "btnBorrar";
-            this.btnBorrar.Size = new System.Drawing.Size(75, 23);
+            this.btnBorrar.Size = new System.Drawing.Size(120, 35);
             this.btnBorrar.TabIndex = 16;
             this.btnBorrar.Text = "Borrar";
-            this.btnBorrar.UseVisualStyleBackColor = true;
+            this.btnBorrar.UseVisualStyleBackColor = false;
+            this.btnBorrar.Click += new System.EventHandler(this.btnBorrar_Click);
             // 
             // btnCancelar
             // 
-            this.btnCancelar.Location = new System.Drawing.Point(533, 274);
+            this.btnCancelar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
+            this.btnCancelar.FlatAppearance.BorderSize = 0;
+            this.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCancelar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnCancelar.ForeColor = System.Drawing.Color.White;
+            this.btnCancelar.Location = new System.Drawing.Point(600, 315);
             this.btnCancelar.Name = "btnCancelar";
-            this.btnCancelar.Size = new System.Drawing.Size(75, 23);
+            this.btnCancelar.Size = new System.Drawing.Size(120, 35);
             this.btnCancelar.TabIndex = 17;
             this.btnCancelar.Text = "Cancelar";
-            this.btnCancelar.UseVisualStyleBackColor = true;
+            this.btnCancelar.UseVisualStyleBackColor = false;
+            this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
             // 
             // dgvEmpleados
             // 
+            this.dgvEmpleados.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvEmpleados.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvEmpleados.BackgroundColor = System.Drawing.Color.White;
+            this.dgvEmpleados.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvEmpleados.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvEmpleados.Location = new System.Drawing.Point(37, 312);
+            this.dgvEmpleados.Location = new System.Drawing.Point(30, 370);
             this.dgvEmpleados.Name = "dgvEmpleados";
+            this.dgvEmpleados.RowHeadersVisible = false;
             this.dgvEmpleados.RowHeadersWidth = 51;
             this.dgvEmpleados.RowTemplate.Height = 24;
-            this.dgvEmpleados.Size = new System.Drawing.Size(667, 169);
+            this.dgvEmpleados.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvEmpleados.Size = new System.Drawing.Size(840, 200);
             this.dgvEmpleados.TabIndex = 18;
+            this.dgvEmpleados.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvEmpleados_CellClick);
             // 
             // frmEmpleados
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 493);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.ClientSize = new System.Drawing.Size(900, 600);
+            this.Controls.Add(this.lblHeaderPanel);
             this.Controls.Add(this.dgvEmpleados);
             this.Controls.Add(this.btnCancelar);
             this.Controls.Add(this.btnBorrar);
@@ -239,7 +311,9 @@
             this.Controls.Add(this.txtId);
             this.Controls.Add(this.id);
             this.Name = "frmEmpleados";
-            this.Text = "frmEmpleados";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Maestro de Empleados";
+            this.Load += new System.EventHandler(this.frmEmpleados_Load);
             ((System.ComponentModel.ISupportInitialize)(this.picFoto)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dgvEmpleados)).EndInit();
             this.ResumeLayout(false);
@@ -268,5 +342,6 @@
         private System.Windows.Forms.Button btnBorrar;
         private System.Windows.Forms.Button btnCancelar;
         private System.Windows.Forms.DataGridView dgvEmpleados;
+        private System.Windows.Forms.Label lblHeaderPanel;
     }
 }

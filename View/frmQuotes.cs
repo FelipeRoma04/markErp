@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
 using Proyecto.Controler;
 using Proyecto.Model;
@@ -18,16 +19,42 @@ namespace Proyecto.View
             InitializeComponent();
             salesCtrl = new salesControler();
             conexion = new conexionModel();
+            
+            ApplyStyle();
+            
             dtpIssue.Value = DateTime.Now;
             dtpExpire.Value = DateTime.Now.AddDays(30);
             
-            // Wire up auto-load event (Task 21)
+            // Wire up auto-load event
             txtClientId.KeyDown += TxtClientId_KeyDown;
             
             ApplyPermissions();
         }
 
-        // Auto-load client name when Client ID is entered (Task 21)
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            pnlHeader.BackColor = UITheme.PrimaryColor;
+            lblTitle.ForeColor = Color.White;
+            lblTitle.Font = UITheme.FontHeader;
+
+            pnlForm.BackColor = Color.White;
+
+            // Labels
+            UITheme.StyleLabel(lblClient);
+            UITheme.StyleLabel(lblIssue);
+            UITheme.StyleLabel(lblExpire);
+            UITheme.StyleLabel(lblTotal);
+
+            // TextBoxes
+            UITheme.StyleTextBox(txtClientId);
+            UITheme.StyleTextBox(txtTotal);
+
+            // Buttons
+            btnSave.BackColor = UITheme.SuccessColor;
+        }
+
+        // Auto-load client name when Client ID is entered
         private void TxtClientId_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Tab || e.KeyCode == Keys.Enter)
@@ -48,17 +75,17 @@ namespace Proyecto.View
                 if (dt != null && dt.Rows.Count > 0)
                 {
                     currentClientName = dt.Rows[0]["Name"].ToString();
-                    MessageBox.Show($"Cliente: {currentClientName}", "Información", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowSuccess($"Cliente: {currentClientName}");
                 }
                 else
                 {
-                    MessageBox.Show("Cliente no encontrado.", "Advertencia", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     currentClientName = "";
+                    ValidationHelper.ShowValidationError("Cliente no encontrado.");
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error al cargar cliente: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ValidationHelper.ShowError("Error al cargar cliente: " + ex.Message);
             }
         }
 
@@ -72,23 +99,40 @@ namespace Proyecto.View
 
             try
             {
-                salesCtrl.ClientId = int.Parse(txtClientId.Text);
+                if (!ValidationHelper.IsValidInteger(txtClientId.Text, out int clientId) ||
+                    !ValidationHelper.IsValidDecimal(txtTotal.Text, out decimal subtotal))
+                {
+                    ValidationHelper.ShowValidationError("Verifique los campos numéricos.");
+                    return;
+                }
+
+                salesCtrl.ClientId = clientId;
                 salesCtrl.IssueDate = dtpIssue.Value;
                 salesCtrl.ExpirationDate = dtpExpire.Value;
-                salesCtrl.Subtotal = decimal.Parse(txtTotal.Text); // Quick hack to re-use Total property
+                salesCtrl.Subtotal = subtotal;
 
                 // Calculate taxes purely from Subtotal
                 decimal finalTotal = salesCtrl.Total; 
 
                 if (salesCtrl.CreateQuote())
                 {
-                    MessageBox.Show($"Cotización Guardada! Total con IVA: {finalTotal:C}", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowSuccess($"Cotización Guardada! Total con IVA: {finalTotal:C}");
+                    ClearFields();
                 }
             }
             catch (Exception ex)
             {
-                ValidationHelper.ShowValidationError("Error en guardado: " + ex.Message);
+                ValidationHelper.ShowError("Error en guardado: " + ex.Message);
             }
+        }
+
+        private void ClearFields()
+        {
+            txtClientId.Clear();
+            txtTotal.Text = "0.00";
+            dtpIssue.Value = DateTime.Now;
+            dtpExpire.Value = DateTime.Now.AddDays(30);
+            currentClientName = "";
         }
 
         private void ApplyPermissions()

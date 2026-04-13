@@ -1,4 +1,5 @@
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
@@ -38,54 +39,42 @@ namespace Proyecto
 
         private void ApplyButtonStyles()
         {
-            // HR buttons - Blue
-            var hrColor = System.Drawing.Color.FromArgb(52, 152, 219);
-            departamentos.BackColor = hrColor;
-            departamentos.ForeColor = System.Drawing.Color.White;
-            empleados.BackColor = hrColor;
-            empleados.ForeColor = System.Drawing.Color.White;
-            contratos.BackColor = hrColor;
-            contratos.ForeColor = System.Drawing.Color.White;
-            btnPayroll.BackColor = hrColor;
-            btnPayroll.ForeColor = System.Drawing.Color.White;
-            btnAttendance.BackColor = hrColor;
-            btnAttendance.ForeColor = System.Drawing.Color.White;
+            // Sidebar buttons styling
+            var sidebarButtons = new Button[] { 
+                departamentos, empleados, contratos, btnAttendance, btnPayroll,
+                btnClients, btnQuotes, btnInvoicing, btnPayments,
+                btnProducts, btnAssets, btnAccounting, btnAudit, btnSettings
+            };
 
-            // Sales buttons - Green
-            var salesColor = System.Drawing.Color.FromArgb(46, 204, 113);
-            btnClients.BackColor = salesColor;
-            btnClients.ForeColor = System.Drawing.Color.White;
-            btnQuotes.BackColor = salesColor;
-            btnQuotes.ForeColor = System.Drawing.Color.White;
-            btnInvoicing.BackColor = salesColor;
-            btnInvoicing.ForeColor = System.Drawing.Color.White;
-            btnPayments.BackColor = salesColor;
-            btnPayments.ForeColor = System.Drawing.Color.White;
-
-            // Inventory buttons - Orange
-            var inventoryColor = System.Drawing.Color.FromArgb(230, 126, 34);
-            btnProducts.BackColor = inventoryColor;
-            btnProducts.ForeColor = System.Drawing.Color.White;
-            btnAssets.BackColor = inventoryColor;
-            btnAssets.ForeColor = System.Drawing.Color.White;
-
-            // Accounting buttons - Purple
-            var accountingColor = System.Drawing.Color.FromArgb(155, 89, 182);
-            btnAccounting.BackColor = accountingColor;
-            btnAccounting.ForeColor = System.Drawing.Color.White;
-            btnAudit.BackColor = accountingColor;
-            btnAudit.ForeColor = System.Drawing.Color.White;
-
-            // Apply flat style to all buttons
-            foreach (Control ctrl in this.Controls)
+            foreach (var btn in sidebarButtons)
             {
-                if (ctrl is Button btn)
-                {
-                    btn.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-                    btn.FlatAppearance.BorderSize = 0;
-                    btn.Font = new System.Drawing.Font("Arial", 10F, System.Drawing.FontStyle.Bold);
-                }
+                btn.FlatStyle = FlatStyle.Flat;
+                btn.FlatAppearance.BorderSize = 0;
+                btn.BackColor = UITheme.PrimaryColor;
+                btn.ForeColor = Color.White;
+                btn.Font = UITheme.FontBody;
+                btn.TextAlign = ContentAlignment.MiddleLeft;
+                btn.Padding = new Padding(20, 0, 0, 0);
+                btn.Height = 45;
+                btn.Cursor = Cursors.Hand;
             }
+
+            // Top Header Styling
+            pnlHeader.BackColor = Color.White;
+            lblTitle.Font = UITheme.FontHeader;
+            lblTitle.ForeColor = UITheme.PrimaryColor;
+            lblUserStatus.Font = UITheme.FontBody;
+            lblUserStatus.ForeColor = UITheme.TextSecondary;
+
+            // Brand Styling
+            lblBrand.BackColor = UITheme.PrimaryColor;
+            lblBrand.ForeColor = Color.White;
+            lblBrand.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+
+            // KPI Panel styling (rounded-like effect via colors)
+            pnlKpiProducts.BackColor = Color.White;
+            pnlKpiSales.BackColor = Color.White;
+            pnlKpiPending.BackColor = Color.White;
         }
 
         private void ApplyRoleUi()
@@ -293,7 +282,7 @@ namespace Proyecto
 
         private async Task LoadKpisAsync()
         {
-            lblKPI.Text = "Cargando KPIs...";
+            lblTitle.Text = "Dashboard Moderno";
             try
             {
                 var dashCtrl = new Proyecto.Controler.dashboardControler();
@@ -301,26 +290,25 @@ namespace Proyecto
                 
                 // Format with Colombian locale
                 var coCulture = new System.Globalization.CultureInfo("es-CO");
-                string salesFormatted = kpis.TotalSales.ToString("C", coCulture);
-                string overdueFormatted = kpis.OverdueAmount.ToString("C", coCulture);
+                string salesFormatted = kpis.TotalSales.ToString("C0", coCulture);
                 
-                // Task 27: Add critical stock alert
-                string criticalStockAlert = "";
-                if (kpis.CriticalStockCount > 0)
-                {
-                    criticalStockAlert = $"⚠️ ALERTA STOCK: {kpis.CriticalStockCount} producto(s) en nivel crítico\n";
-                }
-                
-                lblKPI.Text = criticalStockAlert +
-                              $"Productos: {kpis.TotalProducts}\n" +
-                              $"Ventas (histórico): {salesFormatted}\n" +
-                              $"Facturas por cobrar: {kpis.PendingInvoices}\n" +
-                              $"Vencido: {overdueFormatted}\n" +
-                              $"Clientes: {kpis.TotalClients}";
+                lblKpiProductsVal.Text = kpis.TotalProducts.ToString();
+                lblKpiSalesVal.Text = salesFormatted;
+                lblKpiPendingVal.Text = kpis.PendingInvoices.ToString();
+
+                // Bonus: Color coding pending based on numbers
+                if (kpis.PendingInvoices > 10) 
+                    lblKpiPendingVal.ForeColor = UITheme.DangerColor;
+                else
+                    lblKpiPendingVal.ForeColor = UITheme.AccentColor;
+
+                lblUserStatus.Text = $"Sesión: {Proyecto.Controler.UserSession.Username} | {Proyecto.Controler.UserSession.Role}";
             }
             catch
             {
-                lblKPI.Text = "Error loading metrics.";
+                lblKpiProductsVal.Text = "-";
+                lblKpiSalesVal.Text = "-";
+                lblKpiPendingVal.Text = "-";
             }
         }
 

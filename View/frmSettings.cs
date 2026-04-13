@@ -8,10 +8,6 @@ using Proyecto.Controler;
 
 namespace Proyecto.View
 {
-    /// <summary>
-    /// FASE 4 - Task 37: Company Configuration Settings
-    /// Admin panel for company name, NIT, address, and logo
-    /// </summary>
     public partial class frmSettings : Form
     {
         private Company currentCompany;
@@ -19,14 +15,47 @@ namespace Proyecto.View
         public frmSettings()
         {
             InitializeComponent();
+            ApplyStyle();
             LoadSettings();
+        }
+
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            pnlHeader.BackColor = UITheme.PrimaryColor;
+            lblTitle.ForeColor = Color.White;
+            lblTitle.Font = UITheme.FontHeader;
+
+            // Tabs
+            tabGeneral.BackColor = Color.White;
+            tabContact.BackColor = Color.White;
+
+            // Labels & TextBoxes
+            UITheme.StyleLabel(lblCompanyName);
+            UITheme.StyleLabel(lblNit);
+            UITheme.StyleLabel(lblAddress);
+            UITheme.StyleLabel(lblCity);
+            UITheme.StyleLabel(lblPhone);
+            UITheme.StyleLabel(lblEmail);
+            UITheme.StyleLabel(lblLogo);
+
+            UITheme.StyleTextBox(txtCompanyName);
+            UITheme.StyleTextBox(txtNit);
+            UITheme.StyleTextBox(txtAddress);
+            UITheme.StyleTextBox(txtCity);
+            UITheme.StyleTextBox(txtPhone);
+            UITheme.StyleTextBox(txtEmail);
+
+            // Buttons
+            btnSave.BackColor = UITheme.SuccessColor;
+            btnCancel.BackColor = UITheme.SecondaryColor;
+            btnBrowseLogo.BackColor = UITheme.AccentColor;
         }
 
         private void LoadSettings()
         {
             try
             {
-                // Load company info from database
                 conexionModel conexion = new conexionModel();
                 const string query = @"
                     SELECT TOP 1 
@@ -50,7 +79,6 @@ namespace Proyecto.View
                         LogoPath = row["LogoPath"].ToString()
                     };
 
-                    // Display in form
                     txtCompanyName.Text = currentCompany.CompanyName;
                     txtNit.Text = currentCompany.Nit;
                     txtAddress.Text = currentCompany.Address;
@@ -58,10 +86,12 @@ namespace Proyecto.View
                     txtPhone.Text = currentCompany.Phone;
                     txtEmail.Text = currentCompany.Email;
 
-                    // Load logo if exists
                     if (!string.IsNullOrEmpty(currentCompany.LogoPath) && File.Exists(currentCompany.LogoPath))
                     {
-                        picLogo.Image = Image.FromFile(currentCompany.LogoPath);
+                        using (var stream = new FileStream(currentCompany.LogoPath, FileMode.Open, FileAccess.Read))
+                        {
+                            picLogo.Image = Image.FromStream(stream);
+                        }
                     }
                 }
                 else
@@ -71,60 +101,51 @@ namespace Proyecto.View
             }
             catch (Exception ex)
             {
-                // If Company table doesn't exist yet, show setup message and create default company object
                 if (ex.Message.Contains("Company") || ex.Message.Contains("Invalid object"))
                 {
                     currentCompany = new Company();
-                    MessageBox.Show("Database not yet configured. Please run SQL installation script first." + Environment.NewLine +
-                                  "Script: Database\\10_Master_Installation.sql", 
-                                  "Database Setup Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowError("La tabla 'Company' no existe. Asegúrese de ejecutar los scripts de base de datos.");
                 }
                 else
                 {
-                    MessageBox.Show($"Error loading settings: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    ValidationHelper.ShowError($"Error al cargar configuración: {ex.Message}");
                 }
             }
         }
 
         private void btnBrowseLogo_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog
+            using (OpenFileDialog ofd = new OpenFileDialog
             {
-                Filter = "Image Files (*.bmp;*.jpg;*.jpeg;*.png;*.gif)|*.bmp;*.jpg;*.jpeg;*.png;*.gif",
-                Title = "Seleccionar Logo"
-            };
-
-            if (ofd.ShowDialog() == DialogResult.OK)
+                Filter = "Imagenes (*.bmp;*.jpg;*.jpeg;*.png;*.gif)|*.bmp;*.jpg;*.jpeg;*.png;*.gif",
+                Title = "Seleccionar Logo Corporativo"
+            })
             {
-                try
+                if (ofd.ShowDialog() == DialogResult.OK)
                 {
-                    picLogo.Image = Image.FromFile(ofd.FileName);
-                    currentCompany.LogoPath = ofd.FileName;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading image: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    try
+                    {
+                        picLogo.Image = Image.FromFile(ofd.FileName);
+                        currentCompany.LogoPath = ofd.FileName;
+                    }
+                    catch (Exception ex)
+                    {
+                        ValidationHelper.ShowError($"Error al cargar imagen: {ex.Message}");
+                    }
                 }
             }
         }
 
         private void btnSave_Click(object sender, EventArgs e)
         {
+            if (string.IsNullOrWhiteSpace(txtCompanyName.Text))
+            {
+                ValidationHelper.ShowValidationError("El nombre de la empresa es obligatorio.");
+                return;
+            }
+
             try
             {
-                // Validation
-                if (string.IsNullOrWhiteSpace(txtCompanyName.Text))
-                {
-                    ValidationHelper.ShowValidationError("Nombre de empresa es requerido.");
-                    return;
-                }
-
-                if (string.IsNullOrWhiteSpace(txtNit.Text))
-                {
-                    ValidationHelper.ShowValidationError("NIT es requerido.");
-                    return;
-                }
-
                 currentCompany.CompanyName = txtCompanyName.Text;
                 currentCompany.Nit = txtNit.Text;
                 currentCompany.Address = txtAddress.Text;
@@ -132,76 +153,55 @@ namespace Proyecto.View
                 currentCompany.Phone = txtPhone.Text;
                 currentCompany.Email = txtEmail.Text;
 
-                // Copy logo to app folder for portability
-                if (currentCompany.LogoPath != null && File.Exists(currentCompany.LogoPath))
+                // Save logo locally if it changed and is external
+                if (!string.IsNullOrEmpty(currentCompany.LogoPath) && File.Exists(currentCompany.LogoPath))
                 {
-                    string appLogoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo.png");
-                    File.Copy(currentCompany.LogoPath, appLogoPath, true);
-                    currentCompany.LogoPath = appLogoPath;
+                    string appLogoPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logo_corp.png");
+                    if (currentCompany.LogoPath != appLogoPath)
+                    {
+                        File.Copy(currentCompany.LogoPath, appLogoPath, true);
+                        currentCompany.LogoPath = appLogoPath;
+                    }
                 }
 
-                // Save to database
                 SaveToDatabase();
-
-                MessageBox.Show("Configuración guardada exitosamente.", "Éxito", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ValidationHelper.ShowSuccess("Configuración guardada exitosamente.");
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ValidationHelper.ShowError($"Error al guardar: {ex.Message}");
             }
         }
 
         private void SaveToDatabase()
         {
-            try
+            conexionModel conexion = new conexionModel();
+            const string checkQuery = "SELECT COUNT(*) as cnt FROM Company";
+            DataTable checkDt = conexion.ejecutarConsulta(checkQuery);
+            bool exists = checkDt != null && Convert.ToInt32(checkDt.Rows[0]["cnt"]) > 0;
+
+            string query = exists ? 
+                @"UPDATE Company SET CompanyName = @name, Nit = @nit, Address = @addr, City = @city, Phone = @phone, Email = @email, LogoPath = @logo WHERE Id = (SELECT TOP 1 Id FROM Company)" :
+                @"INSERT INTO Company (CompanyName, Nit, Address, City, Phone, Email, LogoPath) VALUES (@name, @nit, @addr, @city, @phone, @email, @logo)";
+
+            var parameters = new System.Collections.Generic.Dictionary<string, object>
             {
-                conexionModel conexion = new conexionModel();
+                ["@name"] = currentCompany.CompanyName,
+                ["@nit"] = currentCompany.Nit,
+                ["@addr"] = currentCompany.Address,
+                ["@city"] = currentCompany.City,
+                ["@phone"] = currentCompany.Phone,
+                ["@email"] = currentCompany.Email,
+                ["@logo"] = currentCompany.LogoPath ?? ""
+            };
 
-                // Check if company exists
-                const string checkQuery = "SELECT COUNT(*) as cnt FROM Company";
-                DataTable checkDt = conexion.ejecutarConsulta(checkQuery);
-                bool exists = checkDt != null && Convert.ToInt32(checkDt.Rows[0]["cnt"]) > 0;
-
-                string query;
-                if (exists)
-                {
-                    query = @"
-                        UPDATE Company 
-                        SET CompanyName = @name, Nit = @nit, Address = @addr, 
-                            City = @city, Phone = @phone, Email = @email, LogoPath = @logo
-                        WHERE Id = 1";
-                }
-                else
-                {
-                    query = @"
-                        INSERT INTO Company (CompanyName, Nit, Address, City, Phone, Email, LogoPath)
-                        VALUES (@name, @nit, @addr, @city, @phone, @email, @logo)";
-                }
-
-                var parameters = new System.Collections.Generic.Dictionary<string, object>
-                {
-                    ["@name"] = currentCompany.CompanyName,
-                    ["@nit"] = currentCompany.Nit,
-                    ["@addr"] = currentCompany.Address,
-                    ["@city"] = currentCompany.City,
-                    ["@phone"] = currentCompany.Phone,
-                    ["@email"] = currentCompany.Email,
-                    ["@logo"] = currentCompany.LogoPath ?? ""
-                };
-
-                conexion.ejecutarComandoParametrizado(query, parameters);
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error saving to database: {ex.Message}");
-            }
+            conexion.ejecutarComandoParametrizado(query, parameters);
         }
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
-            this.DialogResult = DialogResult.Cancel;
             this.Close();
         }
 

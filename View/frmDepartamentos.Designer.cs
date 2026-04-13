@@ -1,4 +1,7 @@
-﻿namespace Proyecto.View
+using System.Drawing;
+using Proyecto.Controler;
+
+namespace Proyecto.View
 {
     partial class frmDepartamentos
     {
@@ -37,95 +40,146 @@
             this.btnBorrar = new System.Windows.Forms.Button();
             this.btnCancelar = new System.Windows.Forms.Button();
             this.dgvDepartamentos = new System.Windows.Forms.DataGridView();
+            this.lblHeaderPanel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartamentos)).BeginInit();
             this.SuspendLayout();
+            // 
+            // lblHeaderPanel
+            // 
+            this.lblHeaderPanel.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(44)))), ((int)(((byte)(62)))), ((int)(((byte)(80)))));
+            this.lblHeaderPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblHeaderPanel.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
+            this.lblHeaderPanel.ForeColor = System.Drawing.Color.White;
+            this.lblHeaderPanel.Location = new System.Drawing.Point(0, 0);
+            this.lblHeaderPanel.Name = "lblHeaderPanel";
+            this.lblHeaderPanel.Size = new System.Drawing.Size(800, 45);
+            this.lblHeaderPanel.TabIndex = 9;
+            this.lblHeaderPanel.Text = "  Administración de Departamentos";
+            this.lblHeaderPanel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // id
             // 
             this.id.AutoSize = true;
-            this.id.Location = new System.Drawing.Point(66, 29);
+            this.id.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.id.Location = new System.Drawing.Point(30, 65);
             this.id.Name = "id";
-            this.id.Size = new System.Drawing.Size(23, 16);
+            this.id.Size = new System.Drawing.Size(27, 20);
             this.id.TabIndex = 0;
             this.id.Text = "ID:";
             // 
             // txtId
             // 
-            this.txtId.Location = new System.Drawing.Point(50, 70);
+            this.txtId.Enabled = false;
+            this.txtId.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtId.Location = new System.Drawing.Point(30, 90);
             this.txtId.Name = "txtId";
-            this.txtId.Size = new System.Drawing.Size(219, 22);
+            this.txtId.Size = new System.Drawing.Size(120, 27);
             this.txtId.TabIndex = 1;
-            this.txtId.TextChanged += new System.EventHandler(this.txtId_TextChanged);
-            // 
-            // txtNombreDepartamento
-            // 
-            this.txtNombreDepartamento.Location = new System.Drawing.Point(355, 70);
-            this.txtNombreDepartamento.Name = "txtNombreDepartamento";
-            this.txtNombreDepartamento.Size = new System.Drawing.Size(295, 22);
-            this.txtNombreDepartamento.TabIndex = 2;
             // 
             // nombreDepartamento
             // 
             this.nombreDepartamento.AutoSize = true;
-            this.nombreDepartamento.Location = new System.Drawing.Point(364, 29);
+            this.nombreDepartamento.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.nombreDepartamento.Location = new System.Drawing.Point(170, 65);
             this.nombreDepartamento.Name = "nombreDepartamento";
-            this.nombreDepartamento.Size = new System.Drawing.Size(148, 16);
+            this.nombreDepartamento.Size = new System.Drawing.Size(167, 20);
             this.nombreDepartamento.TabIndex = 3;
             this.nombreDepartamento.Text = "Nombre Departamento:";
-            this.nombreDepartamento.Click += new System.EventHandler(this.label2_Click);
+            // 
+            // txtNombreDepartamento
+            // 
+            this.txtNombreDepartamento.Font = new System.Drawing.Font("Segoe UI", 9F);
+            this.txtNombreDepartamento.Location = new System.Drawing.Point(170, 90);
+            this.txtNombreDepartamento.Name = "txtNombreDepartamento";
+            this.txtNombreDepartamento.Size = new System.Drawing.Size(515, 27);
+            this.txtNombreDepartamento.TabIndex = 2;
             // 
             // btnAgregar
             // 
-            this.btnAgregar.Location = new System.Drawing.Point(50, 115);
+            this.btnAgregar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(39)))), ((int)(((byte)(174)))), ((int)(((byte)(96)))));
+            this.btnAgregar.FlatAppearance.BorderSize = 0;
+            this.btnAgregar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnAgregar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnAgregar.ForeColor = System.Drawing.Color.White;
+            this.btnAgregar.Location = new System.Drawing.Point(30, 135);
             this.btnAgregar.Name = "btnAgregar";
-            this.btnAgregar.Size = new System.Drawing.Size(94, 35);
+            this.btnAgregar.Size = new System.Drawing.Size(120, 35);
             this.btnAgregar.TabIndex = 4;
-            this.btnAgregar.Text = "Agregar...";
-            this.btnAgregar.UseVisualStyleBackColor = true;
+            this.btnAgregar.Text = "Agregar";
+            this.btnAgregar.UseVisualStyleBackColor = false;
             this.btnAgregar.Click += new System.EventHandler(this.btnAgregar_Click);
             // 
             // btnModificar
             // 
-            this.btnModificar.Location = new System.Drawing.Point(194, 115);
+            this.btnModificar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(126)))), ((int)(((byte)(34)))));
+            this.btnModificar.FlatAppearance.BorderSize = 0;
+            this.btnModificar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnModificar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnModificar.ForeColor = System.Drawing.Color.White;
+            this.btnModificar.Location = new System.Drawing.Point(160, 135);
             this.btnModificar.Name = "btnModificar";
-            this.btnModificar.Size = new System.Drawing.Size(75, 23);
+            this.btnModificar.Size = new System.Drawing.Size(120, 35);
             this.btnModificar.TabIndex = 5;
             this.btnModificar.Text = "Modificar";
-            this.btnModificar.UseVisualStyleBackColor = true;
+            this.btnModificar.UseVisualStyleBackColor = false;
+            this.btnModificar.Click += new System.EventHandler(this.btnModificar_Click);
             // 
             // btnBorrar
             // 
-            this.btnBorrar.Location = new System.Drawing.Point(320, 115);
+            this.btnBorrar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(57)))), ((int)(((byte)(43)))));
+            this.btnBorrar.FlatAppearance.BorderSize = 0;
+            this.btnBorrar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnBorrar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnBorrar.ForeColor = System.Drawing.Color.White;
+            this.btnBorrar.Location = new System.Drawing.Point(290, 135);
             this.btnBorrar.Name = "btnBorrar";
-            this.btnBorrar.Size = new System.Drawing.Size(75, 23);
+            this.btnBorrar.Size = new System.Drawing.Size(120, 35);
             this.btnBorrar.TabIndex = 6;
             this.btnBorrar.Text = "Borrar";
-            this.btnBorrar.UseVisualStyleBackColor = true;
+            this.btnBorrar.UseVisualStyleBackColor = false;
+            this.btnBorrar.Click += new System.EventHandler(this.btnBorrar_Click);
             // 
             // btnCancelar
             // 
-            this.btnCancelar.Location = new System.Drawing.Point(443, 115);
+            this.btnCancelar.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(127)))), ((int)(((byte)(140)))), ((int)(((byte)(141)))));
+            this.btnCancelar.FlatAppearance.BorderSize = 0;
+            this.btnCancelar.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnCancelar.Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold);
+            this.btnCancelar.ForeColor = System.Drawing.Color.White;
+            this.btnCancelar.Location = new System.Drawing.Point(420, 135);
             this.btnCancelar.Name = "btnCancelar";
-            this.btnCancelar.Size = new System.Drawing.Size(75, 23);
+            this.btnCancelar.Size = new System.Drawing.Size(120, 35);
             this.btnCancelar.TabIndex = 7;
             this.btnCancelar.Text = "Cancelar";
-            this.btnCancelar.UseVisualStyleBackColor = true;
+            this.btnCancelar.UseVisualStyleBackColor = false;
+            this.btnCancelar.Click += new System.EventHandler(this.btnCancelar_Click);
             // 
             // dgvDepartamentos
             // 
+            this.dgvDepartamentos.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dgvDepartamentos.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+            this.dgvDepartamentos.BackgroundColor = System.Drawing.Color.White;
+            this.dgvDepartamentos.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.dgvDepartamentos.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvDepartamentos.Location = new System.Drawing.Point(50, 185);
+            this.dgvDepartamentos.Location = new System.Drawing.Point(30, 190);
             this.dgvDepartamentos.Name = "dgvDepartamentos";
+            this.dgvDepartamentos.RowHeadersVisible = false;
             this.dgvDepartamentos.RowHeadersWidth = 51;
             this.dgvDepartamentos.RowTemplate.Height = 24;
-            this.dgvDepartamentos.Size = new System.Drawing.Size(637, 253);
+            this.dgvDepartamentos.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+            this.dgvDepartamentos.Size = new System.Drawing.Size(740, 300);
             this.dgvDepartamentos.TabIndex = 8;
+            this.dgvDepartamentos.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvDepartamentos_CellClick);
             // 
             // frmDepartamentos
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(240)))), ((int)(((byte)(241)))));
+            this.ClientSize = new System.Drawing.Size(800, 520);
+            this.Controls.Add(this.lblHeaderPanel);
             this.Controls.Add(this.dgvDepartamentos);
             this.Controls.Add(this.btnCancelar);
             this.Controls.Add(this.btnBorrar);
@@ -136,7 +190,9 @@
             this.Controls.Add(this.txtId);
             this.Controls.Add(this.id);
             this.Name = "frmDepartamentos";
-            this.Text = "frmDepartamentos";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
+            this.Text = "Maestro de Departamentos";
+            this.Load += new System.EventHandler(this.frmDepartamentos_Load);
             ((System.ComponentModel.ISupportInitialize)(this.dgvDepartamentos)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -154,5 +210,6 @@
         private System.Windows.Forms.Button btnBorrar;
         private System.Windows.Forms.Button btnCancelar;
         private System.Windows.Forms.DataGridView dgvDepartamentos;
+        private System.Windows.Forms.Label lblHeaderPanel;
     }
 }

@@ -1,7 +1,8 @@
 using System;
+using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
 using Proyecto.Controler;
-using System.Data;
 
 namespace Proyecto.View
 {
@@ -14,7 +15,38 @@ namespace Proyecto.View
         {
             InitializeComponent();
             salesCtrl = new salesControler();
+            ApplyStyle();
             ApplyPermissions();
+        }
+
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            pnlHeader.BackColor = UITheme.PrimaryColor;
+            lblTitle.ForeColor = Color.White;
+            lblTitle.Font = UITheme.FontHeader;
+
+            tabPayment.BackColor = Color.White;
+            tabHistory.BackColor = Color.White;
+
+            // Labels
+            UITheme.StyleLabel(lblInvoice);
+            UITheme.StyleLabel(lblAmount);
+            UITheme.StyleLabel(lblMethod);
+            
+            lblDebt.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            lblDebt.ForeColor = UITheme.DangerColor;
+
+            // TextBoxes
+            UITheme.StyleTextBox(txtInvoiceId);
+            UITheme.StyleTextBox(txtAmount);
+
+            // Button
+            btnSave.BackColor = UITheme.PrimaryColor;
+
+            // History styles
+            UITheme.StyleDataGrid(dgvPaymentHistory);
+            lblHistoryDebt.BackColor = Color.FromArgb(236, 240, 241);
         }
 
         private void btnSave_Click(object sender, EventArgs e)
@@ -25,18 +57,25 @@ namespace Proyecto.View
                 return;
             }
 
+            if (!ValidationHelper.IsValidInteger(txtInvoiceId.Text, out int invoiceId) ||
+                !ValidationHelper.IsValidDecimal(txtAmount.Text, out decimal amount))
+            {
+                ValidationHelper.ShowValidationError("Verifique que el ID de factura y el monto sean valores numéricos válidos.");
+                return;
+            }
+
             try
             {
-                salesCtrl.InvoiceId = int.Parse(txtInvoiceId.Text);
-                salesCtrl.QuoteId = salesCtrl.InvoiceId; // permite pagar cotizacion ingresando su Id
-                salesCtrl.PaymentAmount = decimal.Parse(txtAmount.Text);
+                salesCtrl.InvoiceId = invoiceId;
+                salesCtrl.QuoteId = invoiceId; 
+                salesCtrl.PaymentAmount = amount;
                 salesCtrl.PaymentMethod = cmbMethod.Text;
 
                 if (salesCtrl.ApplyPayment())
                 {
-                    MessageBox.Show($"Pago por {salesCtrl.PaymentAmount:C} procesado via {salesCtrl.PaymentMethod}.", "Cobro Exitoso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    ValidationHelper.ShowSuccess($"Pago por {amount:C} procesado exitosamente.");
                     LoadDebt();
-                    LoadPaymentHistory(); // Task 30: Refresh payment history after payment
+                    LoadPaymentHistory();
                     txtAmount.Clear();
                 }
                 else
@@ -44,38 +83,34 @@ namespace Proyecto.View
                     ValidationHelper.ShowError(salesCtrl.PaymentResultMessage ?? "No se pudo registrar el pago.");
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ValidationHelper.ShowValidationError("Los campos numericos son obligatorios y deben ser validos.");
+                ValidationHelper.ShowError("Error técnico: " + ex.Message);
             }
         }
 
-        private void ApplyPermissions()
-        {
-            canCreatePayment = PermissionHelper.HasPermission(PermissionHelper.Feature.Sales, PermissionHelper.Action.Create);
-            btnSave.Enabled = canCreatePayment;
-        }
-
-        private void LoadDebt()
-        {
-            if (!int.TryParse(txtInvoiceId.Text, out int invoiceId))
-            {
-                lblDebt.Text = "Pendiente cliente: -";
-                return;
-            }
-
-            decimal pending = salesCtrl.GetInvoicePending(invoiceId);
-            lblDebt.Text = $"Pendiente factura: {pending:C}";
-        }
-
-        // Task 30: Auto-load payment history when InvoiceId changes
         private void txtInvoiceId_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Tab || e.KeyCode == Keys.Enter)
             {
+                e.SuppressKeyPress = true;
                 LoadDebt();
                 LoadPaymentHistory();
-                e.Handled = true;
+            }
+        }
+
+        private void LoadDebt()
+        {
+            if (int.TryParse(txtInvoiceId.Text, out int invoiceId))
+            {
+                decimal pending = salesCtrl.GetInvoicePending(invoiceId);
+                lblDebt.Text = $"Pendiente factura: {pending:C}";
+                lblDebt.ForeColor = pending > 0 ? UITheme.DangerColor : UITheme.SuccessColor;
+            }
+            else
+            {
+                lblDebt.Text = "Pendiente factura: -";
+                lblDebt.ForeColor = UITheme.TextSecondary;
             }
         }
 
@@ -92,26 +127,23 @@ namespace Proyecto.View
             {
                 DataTable paymentData = salesCtrl.GetPaymentHistory(invoiceId);
                 dgvPaymentHistory.DataSource = paymentData;
-                
-                // Rename columns for display
-                if (dgvPaymentHistory.Columns.Contains("PaymentDate"))
-                    dgvPaymentHistory.Columns["PaymentDate"].HeaderText = "Fecha de Pago";
-                if (dgvPaymentHistory.Columns.Contains("Amount"))
-                    dgvPaymentHistory.Columns["Amount"].HeaderText = "Monto";
-                if (dgvPaymentHistory.Columns.Contains("PaymentMethod"))
-                    dgvPaymentHistory.Columns["PaymentMethod"].HeaderText = "Método";
 
-                // Calculate and display pending balance
                 decimal invoiceTotal = salesCtrl.GetInvoiceTotal(invoiceId);
                 decimal totalPaid = salesCtrl.GetInvoiceTotalPaid(invoiceId);
                 decimal pending = invoiceTotal - totalPaid;
 
-                lblHistoryDebt.Text = $"Total Factura: {invoiceTotal:C}  |  Total Pagado: {totalPaid:C}  |  Pendiente: {pending:C}";
+                lblHistoryDebt.Text = $"Resumen -> Total Factura: {invoiceTotal:C}  |  Pagado: {totalPaid:C}  |  PENDIENTE: {pending:C}";
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error cargando historial: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ValidationHelper.ShowError("Error cargando historial: " + ex.Message);
             }
+        }
+
+        private void ApplyPermissions()
+        {
+            canCreatePayment = PermissionHelper.HasPermission(PermissionHelper.Feature.Sales, PermissionHelper.Action.Create);
+            btnSave.Enabled = canCreatePayment;
         }
     }
 }

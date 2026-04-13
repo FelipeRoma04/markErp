@@ -72,9 +72,10 @@ namespace Proyecto.Model
 
                 if (pendingDt != null && pendingDt.Rows.Count > 0)
                 {
-                    result.PendingInvoices = Convert.ToInt32(pendingDt.Rows[0]["PendingInvoices"]);
-                    result.OverdueCount = Convert.ToInt32(pendingDt.Rows[0]["OverdueCount"]);
-                    result.OverdueAmount = pendingDt.Rows[0]["OverdueAmount"] == DBNull.Value ? 0 : Convert.ToDecimal(pendingDt.Rows[0]["OverdueAmount"]);
+                    var row = pendingDt.Rows[0];
+                    result.PendingInvoices = row["PendingInvoices"] == DBNull.Value ? 0 : Convert.ToInt32(row["PendingInvoices"]);
+                    result.OverdueCount = row["OverdueCount"] == DBNull.Value ? 0 : Convert.ToInt32(row["OverdueCount"]);
+                    result.OverdueAmount = row["OverdueAmount"] == DBNull.Value ? 0 : Convert.ToDecimal(row["OverdueAmount"]);
                 }
 
                 var clients = conexion.ejecutarConsulta("SELECT COUNT(*) AS Total FROM Clients");

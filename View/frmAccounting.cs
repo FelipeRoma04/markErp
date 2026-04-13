@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Drawing;
 using System.Windows.Forms;
 using Proyecto.Controler;
 
@@ -15,7 +16,59 @@ namespace Proyecto.View
         {
             InitializeComponent();
             ctrl = new accountingControler();
+            ApplyStyle();
             this.Load += FrmAccounting_Load;
+        }
+
+        private void ApplyStyle()
+        {
+            this.BackColor = UITheme.BgColor;
+            pnlHeader.BackColor = UITheme.PrimaryColor;
+            lblTitle.ForeColor = Color.White;
+            lblTitle.Font = UITheme.FontHeader;
+
+            // Tab Pages
+            tabPUC.BackColor = Color.White;
+            tabDiario.BackColor = Color.White;
+            tabReportes.BackColor = Color.White;
+
+            // Grids
+            UITheme.StyleDataGrid(dgvPUC);
+            UITheme.StyleDataGrid(dgvJournal);
+            UITheme.StyleDataGrid(dgvLines);
+            UITheme.StyleDataGrid(dgvReport);
+
+            // Labels
+            UITheme.StyleLabel(lblEntryDate);
+            UITheme.StyleLabel(lblEntryDesc);
+            UITheme.StyleLabel(lblLineAccount);
+            UITheme.StyleLabel(lblLineDebit);
+            UITheme.StyleLabel(lblLineCredit);
+            UITheme.StyleLabel(lblRptFrom);
+            UITheme.StyleLabel(lblRptTo);
+
+            // TextBoxes
+            UITheme.StyleTextBox(txtPucFilter);
+            UITheme.StyleTextBox(txtEntryDesc);
+            UITheme.StyleTextBox(txtLineDebit);
+            UITheme.StyleTextBox(txtLineCredit);
+
+            // Buttons
+            btnPucSearch.BackColor = UITheme.AccentColor;
+            btnCreateEntry.BackColor = UITheme.PrimaryColor;
+            btnAddLine.BackColor = UITheme.AccentColor;
+            btnBalance.BackColor = UITheme.PrimaryColor;
+            btnPL.BackColor = UITheme.AccentColor;
+            btnExportRpt.BackColor = UITheme.SuccessColor;
+
+            // Subheaders
+            lblLineTitle.BackColor = Color.FromArgb(236, 240, 241);
+            lblLineTitle.ForeColor = UITheme.PrimaryColor;
+            lblLineTitle.Font = UITheme.FontSubHeader;
+
+            lblRptTitle.BackColor = Color.FromArgb(236, 240, 241);
+            lblRptTitle.ForeColor = UITheme.PrimaryColor;
+            lblRptTitle.Font = UITheme.FontSubHeader;
         }
 
         private void FrmAccounting_Load(object sender, EventArgs e)
@@ -40,9 +93,9 @@ namespace Proyecto.View
             DataTable dt = ctrl.GetAccounts();
             if (dt != null)
             {
-                cmbLineAccount.DataSource    = dt;
+                cmbLineAccount.DataSource = dt;
                 cmbLineAccount.DisplayMember = "Name";
-                cmbLineAccount.ValueMember   = "Id";
+                cmbLineAccount.ValueMember = "Id";
                 cmbLineAccount.SelectedIndex = -1;
             }
         }
@@ -64,15 +117,20 @@ namespace Proyecto.View
 
         private void btnCreateEntry_Click(object sender, EventArgs e)
         {
-            ctrl.EntryDate   = dtpEntryDate.Value;
+            if (string.IsNullOrWhiteSpace(txtEntryDesc.Text))
+            {
+                ValidationHelper.ShowValidationError("La descripción del asiento es obligatoria.");
+                return;
+            }
+
+            ctrl.EntryDate = dtpEntryDate.Value;
             ctrl.Description = txtEntryDesc.Text.Trim();
 
             int newId = ctrl.CreateJournalEntry();
             if (newId > 0)
             {
                 selectedJournalId = newId;
-                MessageBox.Show($"Asiento #{newId} creado. Ahora añade las líneas.", "OK",
-                                MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ValidationHelper.ShowSuccess($"Asiento #{newId} creado. Ahora puede añadir los movimientos.");
                 txtEntryDesc.Clear();
                 CargarJournal();
                 RefrescarLineas();
@@ -93,19 +151,30 @@ namespace Proyecto.View
         {
             if (selectedJournalId < 0)
             {
-                MessageBox.Show("Selecciona o crea un asiento primero.", "Aviso",
-                                MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                ValidationHelper.ShowValidationError("Debe seleccionar o crear un asiento antes de añadir líneas.");
+                return;
+            }
+
+            if (cmbLineAccount.SelectedIndex == -1)
+            {
+                ValidationHelper.ShowValidationError("Debe seleccionar una cuenta contable.");
                 return;
             }
 
             ctrl.JournalEntryId = selectedJournalId;
-            ctrl.AccountId      = cmbLineAccount.SelectedValue != null ? Convert.ToInt32(cmbLineAccount.SelectedValue) : 0;
-            ctrl.Debit          = ParseDecimal(txtLineDebit.Text);
-            ctrl.Credit         = ParseDecimal(txtLineCredit.Text);
+            ctrl.AccountId = Convert.ToInt32(cmbLineAccount.SelectedValue);
+            ctrl.Debit = ParseDecimal(txtLineDebit.Text);
+            ctrl.Credit = ParseDecimal(txtLineCredit.Text);
+
+            if (ctrl.Debit == 0 && ctrl.Credit == 0)
+            {
+                ValidationHelper.ShowValidationError("El valor del Débito o Crédito debe ser mayor a cero.");
+                return;
+            }
 
             if (ctrl.AddLine())
             {
-                txtLineDebit.Text  = "0";
+                txtLineDebit.Text = "0";
                 txtLineCredit.Text = "0";
                 cmbLineAccount.SelectedIndex = -1;
                 RefrescarLineas();
@@ -113,8 +182,7 @@ namespace Proyecto.View
             }
             else
             {
-                MessageBox.Show("Error al añadir línea. Verifica los datos.", "Error",
-                                MessageBoxButtons.OK, MessageBoxIcon.Error);
+                ValidationHelper.ShowError("Error al registrar el movimiento contable.");
             }
         }
 
@@ -131,27 +199,28 @@ namespace Proyecto.View
             DataTable dt = ctrl.GetJournalLines();
             if (dt == null || dt.Rows.Count == 0)
             {
-                lblBalanceCheck.Text      = "Partida doble: sin líneas aún.";
-                lblBalanceCheck.ForeColor = System.Drawing.Color.Gray;
+                lblBalanceCheck.Text = "✔ Partida doble: sin líneas aún.";
+                lblBalanceCheck.ForeColor = UITheme.TextSecondary;
                 return;
             }
 
             decimal totalDebit = 0, totalCredit = 0;
             foreach (DataRow row in dt.Rows)
             {
-                totalDebit  += Convert.ToDecimal(row["Debit"]);
+                totalDebit += Convert.ToDecimal(row["Debit"]);
                 totalCredit += Convert.ToDecimal(row["Credit"]);
             }
 
             if (totalDebit == totalCredit)
             {
-                lblBalanceCheck.Text      = $"✔ Partida doble balanceada — Débito: {totalDebit:C}  Crédito: {totalCredit:C}";
-                lblBalanceCheck.ForeColor = System.Drawing.Color.DarkGreen;
+                lblBalanceCheck.Text = $"✔ Balanceado — Total: {totalDebit:C}";
+                lblBalanceCheck.ForeColor = UITheme.SuccessColor;
             }
             else
             {
-                lblBalanceCheck.Text      = $"✘ Desbalance — Débito: {totalDebit:C}  Crédito: {totalCredit:C}  (Diferencia: {Math.Abs(totalDebit - totalCredit):C})";
-                lblBalanceCheck.ForeColor = System.Drawing.Color.Crimson;
+                decimal diff = Math.Abs(totalDebit - totalCredit);
+                lblBalanceCheck.Text = $"✘ Desbalanceado — Diferencia: {diff:C} (D:{totalDebit:C} C:{totalCredit:C})";
+                lblBalanceCheck.ForeColor = UITheme.DangerColor;
             }
         }
 
@@ -161,39 +230,37 @@ namespace Proyecto.View
 
         private void btnBalance_Click(object sender, EventArgs e)
         {
-            currentReport         = ctrl.GetBalanceGeneral();
-            dgvReport.DataSource  = currentReport;
-            lblRptTitle.Text      = "BALANCE GENERAL";
+            currentReport = ctrl.GetBalanceGeneral();
+            dgvReport.DataSource = currentReport;
+            lblRptTitle.Text = "ESTADO DE SITUACIÓN FINANCIERA (BALANCE GENERAL)";
         }
 
         private void btnPL_Click(object sender, EventArgs e)
         {
-            currentReport         = ctrl.GetPL(dtpRptFrom.Value, dtpRptTo.Value);
-            dgvReport.DataSource  = currentReport;
-            lblRptTitle.Text      = $"ESTADO DE RESULTADOS — {dtpRptFrom.Value:dd/MM/yyyy} al {dtpRptTo.Value:dd/MM/yyyy}";
+            currentReport = ctrl.GetPL(dtpRptFrom.Value, dtpRptTo.Value);
+            dgvReport.DataSource = currentReport;
+            lblRptTitle.Text = $"ESTADO DE RESULTADOS INTEGRAL ({dtpRptFrom.Value:dd/MM/yy} - {dtpRptTo.Value:dd/MM/yy})";
         }
 
         private void btnExportRpt_Click(object sender, EventArgs e)
         {
             if (currentReport == null || currentReport.Rows.Count == 0)
             {
-                MessageBox.Show("Genera un reporte primero.", "Aviso", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                ValidationHelper.ShowValidationError("Primero debe generar un reporte antes de exportarlo.");
                 return;
             }
-            ReportControler.ExportToExcel(currentReport, lblRptTitle.Text.Replace(" ", "_"));
+            
+            if (ReportControler.ExportToExcel(currentReport, "Reporte_Contable_" + DateTime.Now.ToString("yyyyMMdd")))
+            {
+                ValidationHelper.ShowSuccess("Reporte exportado correctamente.");
+            }
         }
-
-        // ─────────────────────────────────────────
-        // Helpers
-        // ─────────────────────────────────────────
 
         private decimal ParseDecimal(string val)
         {
             decimal result;
-            decimal.TryParse(val?.Replace(",", "."),
-                System.Globalization.NumberStyles.Any,
-                System.Globalization.CultureInfo.InvariantCulture,
-                out result);
+            string clean = val?.Replace("$", "").Replace(" ", "").Replace(",", ".");
+            decimal.TryParse(clean, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out result);
             return result;
         }
     }

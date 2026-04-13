@@ -65,6 +65,7 @@
     <Compile Include="Controler\PermissionHelper.cs" />
     <Compile Include="Controler\UserSession.cs" />
     <Compile Include="Controler\ValidationHelper.cs" />
+    <Compile Include="Controler\UITheme.cs" />
     <Compile Include="Controler\AuditLogger.cs" />
     <Compile Include="Controler\AccountingEntryLogger.cs" />
     <Compile Include="Controler\StockMovementLogger.cs" />
